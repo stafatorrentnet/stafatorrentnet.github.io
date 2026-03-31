@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<link rel="shortcut icon" href="nt.png" type="image/x-icon">
+<title>𝔑𝔤𝔬𝔶𝔬𝔱 𝔗𝔶𝔭𝔢| stafatorrentnet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#000;--panel:#090909;--panel2:#0f0f0f;
+  --border:#202020;--border2:#2e2e2e;
+  --text:#c8c8c8;--dim:#3a3a3a;--bright:#fff;
+  --muted:#686868;--red:#aa0000;
+}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{display:flex;flex-direction:column;font-family:'Share Tech Mono',monospace;color:var(--text);}
+
+/* ── HEADER ── */
+#hdr{
+  height:54px;background:var(--bg);border-bottom:1px solid #1c1c1c;
+  display:flex;align-items:center;padding:0 14px;gap:10px;flex-shrink:0;
+}
+#logo{
+  font-family:'UnifrakturMaguntia',cursive;font-size:28px;color:#fff;
+  letter-spacing:2px;text-shadow:0 0 18px rgba(255,255,255,0.35),0 0 50px rgba(255,255,255,0.08);
+  white-space:nowrap;line-height:1;
+}
+#logo sub{
+  font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);
+  letter-spacing:3px;vertical-align:middle;margin-left:8px;
+}
+.vsep{width:1px;height:30px;background:#1e1e1e;flex-shrink:0;}
+.hbar{display:flex;align-items:center;gap:3px;}
+.hbtn{
+  background:none;border:1px solid var(--dim);color:var(--muted);
+  font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:1px;
+  padding:7px 13px;cursor:pointer;border-radius:1px;transition:.12s;
+  white-space:nowrap;display:flex;align-items:center;gap:4px;
+}
+.hbtn svg{width:14px;height:14px;flex-shrink:0;}
+.hbtn:hover{border-color:#888;color:#ccc;}
+.hbtn.active{border-color:#fff;color:#fff;background:rgba(255,255,255,0.06);}
+.hbtn.sv{border-color:#888;color:#aaa;}
+.hbtn.sv:hover{background:#fff;color:#000;border-color:#fff;}
+.hbtn.cl:hover{border-color:var(--red);color:#cc3333;}
+#hdr-r{margin-left:auto;display:flex;gap:6px;align-items:center;}
+
+/* Mobile-only toggle buttons — hidden on desktop */
+.mob-panel-btn{display:none;}
+
+/* ── LAYOUT ── */
+#wrap{display:flex;flex:1;overflow:hidden;}
+
+/* ── LEFT PANEL ── */
+#left{
+  width:236px;min-width:236px;background:var(--panel);
+  border-right:1px solid #111;display:flex;flex-direction:column;
+  overflow:hidden;flex-shrink:0;
+}
+#ls{flex:1;overflow-y:auto;padding:8px 8px 12px;}
+#ls::-webkit-scrollbar{width:3px;}
+#ls::-webkit-scrollbar-thumb{background:#1e1e1e;}
+
+/* ── SECTION ── */
+.sec{border:1px solid var(--border);border-radius:1px;margin-bottom:8px;overflow:hidden;}
+.shd{
+  background:var(--panel2);border-bottom:1px solid var(--border);
+  padding:8px 10px;font-size:9px;letter-spacing:3px;color:var(--muted);
+  text-transform:uppercase;display:flex;align-items:center;
+  justify-content:space-between;cursor:pointer;user-select:none;
+}
+.shd:hover{color:#aaa;}
+.shd .arr{transition:.2s;font-size:8px;}
+.sec.col .shd .arr{transform:rotate(-90deg);}
+.sec.col .sbd{display:none;}
+.sbd{padding:10px;}
+
+/* ── MODE GRID ── */
+.mgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.mbtn{
+  background:none;border:1px solid var(--dim);color:var(--muted);
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:1px;
+  padding:8px 4px;cursor:pointer;border-radius:1px;text-align:center;
+  transition:.12s;text-transform:uppercase;
+}
+.mbtn:hover{border-color:#888;color:#bbb;}
+.mbtn.on{border-color:#fff;color:#fff;background:rgba(255,255,255,0.07);}
+
+/* ── SLIDERS ── */
+.sr{display:flex;align-items:center;gap:6px;margin-bottom:7px;}
+.sl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;width:74px;flex-shrink:0;}
+.sv2{font-size:9px;color:#888;min-width:32px;text-align:right;flex-shrink:0;}
+
+input[type=range]{
+  -webkit-appearance:none;flex:1;height:3px;
+  background:#1e1e1e;border-radius:2px;outline:none;cursor:pointer;
+  margin:0 7px;
+  min-width:0;
+}
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:14px;height:14px;
+  border-radius:50%;background:#fff;cursor:pointer;
+}
+input[type=range]::-moz-range-thumb{
+  width:14px;height:14px;border:none;
+  border-radius:50%;background:#fff;cursor:pointer;
+}
+
+/* ── TOGGLES ── */
+.tr{display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;}
+.tl{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;}
+.tog{position:relative;width:34px;height:17px;flex-shrink:0;}
+.tog input{display:none;}
+.tog-t{
+  position:absolute;inset:0;background:#111;border:1px solid var(--dim);
+  border-radius:9px;cursor:pointer;transition:.2s;
+}
+.tog-t::after{
+  content:'';position:absolute;left:2px;top:2px;
+  width:11px;height:11px;background:var(--dim);border-radius:50%;transition:.2s;
+}
+.tog input:checked+.tog-t{border-color:#888;}
+.tog input:checked+.tog-t::after{left:19px;background:#fff;}
+
+/* ── CANVAS AREA ── */
+#ca{
+  flex:1;position:relative;overflow:hidden;
+  background-color:#0c0c0c;
+  background-image:
+    linear-gradient(45deg,#141414 25%,transparent 25%),
+    linear-gradient(-45deg,#141414 25%,transparent 25%),
+    linear-gradient(45deg,transparent 75%,#141414 75%),
+    linear-gradient(-45deg,transparent 75%,#141414 75%);
+  background-size:22px 22px;
+  background-position:0 0,0 11px,11px -11px,-11px 0px;
+}
+#ca.has-bg{
+  background:#000;
+  background-image:none;
+}
+#cw{position:absolute;inset:0;z-index:1;}
+#cw canvas{position:absolute;top:0;left:0;width:100%;height:100%;}
+#ci-pos-bar{
+  position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+  font-size:8px;color:var(--dim);letter-spacing:2px;
+  pointer-events:none;z-index:10;
+  background:rgba(0,0,0,0.5);padding:2px 8px;border-radius:2px;
+}
+
+/* ── RIGHT PANEL ── */
+#right{
+  width:224px;min-width:224px;background:var(--panel);
+  border-left:1px solid #111;display:flex;flex-direction:column;
+  overflow:hidden;flex-shrink:0;
+}
+#rs{flex:1;overflow-y:auto;padding:8px 8px 12px;}
+#rs::-webkit-scrollbar{width:3px;}
+#rs::-webkit-scrollbar-thumb{background:#1e1e1e;}
+
+/* ── COLOR WIDGETS ── */
+.cmain{
+  width:100%;height:115px;border:1px solid var(--border);border-radius:1px;
+  cursor:pointer;padding:2px;background:var(--panel2);display:block;
+  margin-bottom:8px;
+}
+.crow{display:flex;gap:7px;align-items:center;margin-bottom:7px;}
+.csw{
+  width:30px;height:30px;border-radius:1px;
+  border:1px solid var(--border2);cursor:pointer;flex-shrink:0;
+}
+.chx{font-size:9px;color:var(--muted);letter-spacing:1px;flex:1;}
+.pres{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:6px;}
+.pd{
+  width:19px;height:19px;border-radius:50%;cursor:pointer;
+  border:1px solid transparent;transition:.1s;flex-shrink:0;
+}
+.pd:hover{transform:scale(1.28);border-color:#fff;}
+
+/* ── BG ── */
+.abtn{
+  width:100%;background:none;border:1px solid var(--dim);color:var(--muted);
+  font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:2px;
+  padding:8px 6px;cursor:pointer;border-radius:1px;transition:.12s;
+  text-transform:uppercase;margin-top:5px;display:block;text-align:center;
+}
+.abtn:hover{border-color:#fff;color:#fff;}
+.abtn.danger:hover{border-color:var(--red);color:#cc3333;}
+
+/* ── PREVIEW ── */
+#prev{width:100%;border:1px solid var(--border);border-radius:1px;display:block;}
+
+/* ── STATUS BAR ── */
+#sb{
+  height:26px;background:var(--bg);border-top:1px solid #111;
+  display:flex;align-items:center;padding:0 14px;gap:18px;
+  font-size:8px;color:var(--dim);letter-spacing:1px;flex-shrink:0;
+}
+#sb span{color:var(--muted);}
+
+/* ── MOBILE BOTTOM TOOLBAR ── */
+#mob-bar{
+  display:none;
+  height:52px;background:var(--bg);border-top:1px solid #1c1c1c;
+  align-items:center;justify-content:space-around;padding:0 8px;flex-shrink:0;
+  gap:4px;
+}
+.mbarbtn{
+  background:none;border:1px solid var(--dim);color:var(--muted);
+  font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:1px;
+  padding:6px 10px;cursor:pointer;border-radius:1px;transition:.12s;
+  white-space:nowrap;display:flex;flex-direction:column;align-items:center;gap:2px;
+  flex:1;
+}
+.mbarbtn svg{width:16px;height:16px;}
+.mbarbtn span{font-size:7px;letter-spacing:1px;}
+.mbarbtn:active,.mbarbtn.active{border-color:#fff;color:#fff;background:rgba(255,255,255,0.06);}
+
+/* ── MOB OVERLAY (backdrop) ── */
+#mob-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:150;
+  background:rgba(0,0,0,0.65);
+  opacity:0;transition:opacity 0.25s;
+  pointer-events:none;
+}
+#mob-overlay.show{opacity:1;pointer-events:auto;}
+
+/* ═══════════════════════════════
+   MOBILE RESPONSIVE  ≤ 640px
+═══════════════════════════════ */
+@media (max-width:640px){
+
+  /* Header: smaller, show only essentials */
+  #hdr{
+    height:50px;padding:0 10px;gap:6px;
+    overflow-x:auto;-webkit-overflow-scrolling:touch;
+  }
+  #logo{font-size:20px;letter-spacing:1px;}
+  #logo sub{display:none;}
+  .vsep{display:none;}
+
+  /* Hide desktop tool bar in header — moved to bottom bar */
+  #hdr-desktop-tools{display:none;}
+
+  /* Show mobile panel toggle buttons */
+  .mob-panel-btn{
+    display:flex;background:none;border:1px solid var(--dim);
+    color:var(--muted);cursor:pointer;padding:8px 10px;
+    border-radius:1px;align-items:center;justify-content:center;
+    transition:.12s;flex-shrink:0;
+  }
+  .mob-panel-btn svg{width:16px;height:16px;}
+  .mob-panel-btn:active{border-color:#fff;color:#fff;}
+
+  /* Right side: save + clear only */
+  #hdr-r .hbtn-undo-redo{display:none;}
+
+  /* Status bar: hide keyboard hints, show fewer items */
+  #sb .sb-hint{display:none;}
+  #sb{gap:10px;padding:0 10px;}
+
+  /* Layout: panels become fixed drawers */
+  #left{
+    position:fixed;top:0;bottom:0;left:0;z-index:200;
+    width:min(280px,85vw);min-width:unset;
+    transform:translateX(-100%);
+    transition:transform 0.25s ease;
+    border-right:1px solid #222;
+    /* extend below header */
+    top:50px;
+  }
+  #right{
+    position:fixed;top:0;bottom:0;right:0;z-index:200;
+    width:min(280px,85vw);min-width:unset;
+    transform:translateX(100%);
+    transition:transform 0.25s ease;
+    border-left:1px solid #222;
+    top:50px;
+  }
+  #left.mob-open{transform:translateX(0);}
+  #right.mob-open{transform:translateX(0);}
+
+  /* Overlay visible */
+  #mob-overlay{display:block;}
+
+  /* Canvas takes full remaining space */
+  #ca{width:100%;}
+
+  /* Show mobile bottom toolbar, hide desktop status bar */
+  #mob-bar{display:flex;}
+  #sb{display:none;}
+
+  /* Range inputs: bigger thumb for touch */
+  input[type=range]::-webkit-slider-thumb{width:20px;height:20px;}
+  input[type=range]::-moz-range-thumb{width:20px;height:20px;}
+  input[type=range]{height:4px;margin:0 10px;}
+
+  /* Toggle bigger tap target */
+  .tog{width:42px;height:22px;}
+  .tog-t::after{width:14px;height:14px;}
+  .tog input:checked+.tog-t::after{left:24px;}
+
+  /* Mode buttons bigger */
+  .mbtn{padding:12px 4px;font-size:10px;}
+
+  /* Sliders label shorter */
+  .sl{width:64px;font-size:8px;}
+
+  /* Color wheel smaller on mobile */
+  .cmain{height:90px;}
+
+  /* Panel scroll area accounts for safe area bottom */
+  #ls,#rs{padding-bottom:env(safe-area-inset-bottom,12px);}
+}
+
+/* iPhone notch / safe area */
+@supports(padding-bottom: env(safe-area-inset-bottom)){
+  #mob-bar{padding-bottom:env(safe-area-inset-bottom);}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════ HEADER ══════════ -->
+<div id="hdr">
+
+  <!-- Mobile: left panel toggle -->
+  <button class="mob-panel-btn" onclick="toggleLeft()" title="Parameter">
+    <svg viewBox="0 0 16 16" fill="currentColor"><rect x="1" y="3" width="14" height="1.5" rx=".5"/><rect x="1" y="7.25" width="9" height="1.5" rx=".5"/><rect x="1" y="11.5" width="11" height="1.5" rx=".5"/></svg>
+  </button>
+
+  <div id="logo">Ngoyot Type<sub>Kengerian Kaligrafi |  stafatorrentnet</sub></div>
+
+  <!-- Desktop tool buttons -->
+  <div id="hdr-desktop-tools" style="display:flex;align-items:center;gap:10px;">
+    <div class="vsep"></div>
+    <div class="hbar">
+      <button class="hbtn active" id="btn-draw" onclick="setTool('draw')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 1.5a1.5 1.5 0 0 1 0 2.12L5 12.12 2 13l.88-3L11.38 1.5a1.5 1.5 0 0 1 2.12 0z"/></svg>DRAW
+      </button>
+      <button class="hbtn" id="btn-erase" onclick="setTool('erase')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 13h5l7-7-3-3L4 10l-2 3zm9.5-9.5 1 1-7 7-1-1 7-7z"/></svg>ERASE
+      </button>
+      <button class="hbtn" id="btn-move" onclick="setTool('move')">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l-2 2h4L8 2zm0 12 2-2H6l2 2zM2 8l2 2V6L2 8zm12 0-2-2v4l2-2zm-4-1H6a2 2 0 1 0 0 2h4a2 2 0 1 0 0-2z"/></svg>MOVE
+      </button>
+    </div>
+    <div class="vsep"></div>
+    <div class="hbar hbtn-undo-redo">
+      <button class="hbtn" onclick="undo()">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 4.5A6.5 6.5 0 1 1 4 14H2v-2h2a4.5 4.5 0 1 0-1.77-3.5H4V10L1 7l3-3v2H2.5a6.52 6.52 0 0 1-.99-2.5z" fill-rule="evenodd"/></svg>UNDO
+      </button>
+      <button class="hbtn" onclick="redo()">
+        <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 4.5A6.5 6.5 0 1 0 12 14h2v-2h-2a4.5 4.5 0 1 1 1.77-3.5H12V10l3-3-3-3v2h1.5a6.52 6.52 0 0 0 .99-2.5z" fill-rule="evenodd"/></svg>REDO
+      </button>
+    </div>
+  </div>
+
+  <div id="hdr-r" style="margin-left:auto;display:flex;gap:6px;align-items:center;">
+    <button class="hbtn cl" onclick="clearCanvas()">CLEAR</button>
+    <button class="hbtn sv" onclick="savePNG()">▼ SAVE</button>
+  </div>
+
+  <!-- Mobile: right panel toggle -->
+  <button class="mob-panel-btn" onclick="toggleRight()" title="Color & Preview">
+    <svg viewBox="0 0 16 16" fill="currentColor"><circle cx="8" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="8" r="1"/><line x1="8" y1="1" x2="8" y2="4" stroke="currentColor" stroke-width="1.5"/><line x1="8" y1="12" x2="8" y2="15" stroke="currentColor" stroke-width="1.5"/><line x1="1" y1="8" x2="4" y2="8" stroke="currentColor" stroke-width="1.5"/><line x1="12" y1="8" x2="15" y2="8" stroke="currentColor" stroke-width="1.5"/></svg>
+  </button>
+
+</div>
+
+<!-- ══════════ BACKDROP ══════════ -->
+<div id="mob-overlay" onclick="closeDrawers()"></div>
+
+<div id="wrap">
+
+<!-- ══════════ LEFT ══════════ -->
+<div id="left"><div id="ls">
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>MODE CABANG</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="mgrid">
+        <button class="mbtn on" data-m="lightning" onclick="setMode(this)">BELDEX</button>
+        <button class="mbtn" data-m="root"      onclick="setMode(this)">NYIVR</button>
+        <button class="mbtn" data-m="mycelium"  onclick="setMode(this)">SVKET</button>
+        <button class="mbtn" data-m="vessel"    onclick="setMode(this)">IDEP</button>
+        <button class="mbtn" data-m="branch"    onclick="setMode(this)">DANDELION</button>
+        <button class="mbtn" data-m="chaos"     onclick="setMode(this)">JEMBOT</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>PARAMETER CABANG</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="sr"><span class="sl">FREKUENSI</span><input type="range" id="p-freq"   min="1"  max="20"  value="6"  oninput="up('d-freq',this.value)">       <span class="sv2" id="d-freq">6</span></div>
+      <div class="sr"><span class="sl">SUDUT</span>    <input type="range" id="p-angle"  min="5"  max="120" value="35" oninput="up('d-angle',this.value+'°')"> <span class="sv2" id="d-angle">35°</span></div>
+      <div class="sr"><span class="sl">KEDALAMAN</span><input type="range" id="p-depth"  min="1"  max="9"   value="4"  oninput="up('d-depth',this.value)">       <span class="sv2" id="d-depth">4</span></div>
+      <div class="sr"><span class="sl">REDUKSI</span>  <input type="range" id="p-reduce" min="30" max="95"  value="68" oninput="up('d-reduce',this.value+'%')"> <span class="sv2" id="d-reduce">68%</span></div>
+      <div class="sr"><span class="sl">PANJANG</span>  <input type="range" id="p-len"    min="10" max="200" value="60" oninput="up('d-len',this.value)">         <span class="sv2" id="d-len">60</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>STROKE</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="sr"><span class="sl">TEBAL</span>    <input type="range" id="p-thick" min="1"  max="40"  value="3"  oninput="up('d-thick',this.value+'px')"> <span class="sv2" id="d-thick">3px</span></div>
+      <div class="sr"><span class="sl">OPACITY</span>  <input type="range" id="p-opa"   min="5"  max="100" value="90" oninput="up('d-opa',this.value+'%')">   <span class="sv2" id="d-opa">90%</span></div>
+      <div class="sr"><span class="sl">ROUGHNESS</span><input type="range" id="p-rough" min="0"  max="100" value="25" oninput="up('d-rough',this.value)">      <span class="sv2" id="d-rough">25</span></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>KARAKTER</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="sr"><span class="sl">ORGANIK</span><input type="range" id="p-org"   min="0" max="100" value="50" oninput="up('d-org',this.value)">   <span class="sv2" id="d-org">50</span></div>
+      <div class="sr"><span class="sl">KAOS</span>   <input type="range" id="p-chaos" min="0" max="100" value="30" oninput="up('d-chaos',this.value)"> <span class="sv2" id="d-chaos">30</span></div>
+      <div class="sr"><span class="sl">TAPER</span>  <input type="range" id="p-taper" min="0" max="100" value="60" oninput="up('d-taper',this.value)"> <span class="sv2" id="d-taper">60</span></div>
+      <div class="tr"><span class="tl">CERMIN X</span><label class="tog"><input type="checkbox" id="t-mirror"><div class="tog-t"></div></label></div>
+    </div>
+  </div>
+
+</div></div>
+
+<!-- ══════════ CANVAS ══════════ -->
+<div id="ca">
+  <div id="cw">
+    <canvas id="bgc"></canvas><!-- layer 1: foto/bg warna -->
+    <canvas id="mc"></canvas> <!-- layer 2: drawing -->
+    <canvas id="ov"></canvas> <!-- layer 3: cursor overlay -->
+  </div>
+  <div id="ci-pos-bar"><span id="ci-pos">–</span></div>
+</div>
+
+<!-- ══════════ RIGHT ══════════ -->
+<div id="right"><div id="rs">
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>COLOR</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="crow">
+        <div class="csw" id="cswatch" style="background:#fff" onclick="g('cpick').click()"></div>
+        <input type="color" id="cpick" value="#ffffff" style="display:none" oninput="setCol(this.value)">
+        <span class="chx" id="chex">#FFFFFF</span>
+      </div>
+      <input type="color" id="cwheel" value="#ffffff" oninput="setCol(this.value)" class="cmain">
+      <div style="font-size:8px;color:var(--muted);letter-spacing:2px;margin:4px 0 5px">PRESETS</div>
+      <div class="pres">
+        <div class="pd" style="background:#fff" onclick="setCol('#ffffff')"></div>
+        <div class="pd" style="background:#ccc" onclick="setCol('#cccccc')"></div>
+        <div class="pd" style="background:#888" onclick="setCol('#888888')"></div>
+        <div class="pd" style="background:#444" onclick="setCol('#444444')"></div>
+        <div class="pd" style="background:#c00" onclick="setCol('#cc0000')"></div>
+        <div class="pd" style="background:#800" onclick="setCol('#880000')"></div>
+        <div class="pd" style="background:#26c" onclick="setCol('#2266cc')"></div>
+        <div class="pd" style="background:#262" onclick="setCol('#226622')"></div>
+        <div class="pd" style="background:#ca0" onclick="setCol('#ccaa00')"></div>
+        <div class="pd" style="background:#609" onclick="setCol('#660099')"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>BACKGROUND</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <div class="tr">
+        <span class="tl">TRANSPARAN</span>
+        <label class="tog"><input type="checkbox" id="t-transp" checked onchange="onTranspChange(this.checked)"><div class="tog-t"></div></label>
+      </div>
+      <div class="crow" style="margin-top:6px">
+        <input type="color" id="bgp" value="#000000"
+          oninput="setBg(this.value)"
+          style="width:38px;height:28px;border:1px solid var(--border);border-radius:1px;cursor:pointer;padding:1px;background:var(--panel);">
+        <span class="chx" style="font-size:8px">BG COLOR</span>
+      </div>
+      <div class="mgrid" style="margin-top:6px">
+        <button class="mbtn" onclick="setBg('#000000')">■ BLACK</button>
+        <button class="mbtn" onclick="setBg('#ffffff')">□ WHITE</button>
+        <button class="mbtn" onclick="setBg('#111111')">▪ DARK</button>
+        <button class="mbtn" onclick="setBg('#1a0000')">▸ BLOOD</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>PHOTO LAYER</span><span class="arr">▼</span></div>
+    <div class="sbd">
+      <input type="file" id="imgUpload" accept="image/*" style="display:none" onchange="loadPhoto(this)">
+      <button class="abtn" onclick="g('imgUpload').click()" style="margin-top:0">↑ UPLOAD FOTO</button>
+      <button class="abtn danger" id="btnClearPhoto" style="display:none" onclick="clearPhoto()">✕ HAPUS FOTO</button>
+      <div id="photoName" style="font-size:8px;color:var(--muted);margin-top:6px;letter-spacing:1px;word-break:break-all;display:none;line-height:1.4"></div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="shd" onclick="tSec(this)"><span>PREVIEW</span><span class="arr">▼</span></div>
+    <div class="sbd" style="padding:6px">
+      <canvas id="prev" height="130"></canvas>
+    </div>
+  </div>
+
+</div></div>
+</div>
+
+<!-- ══════════ STATUS BAR (desktop) ══════════ -->
+<div id="sb">
+  <div>MODE: <span id="s-mode">LIGHTNING</span></div>
+  <div>TOOL: <span id="s-tool">DRAW</span></div>
+  <div>POS: <span id="s-pos">–</span></div>
+  <div>COLOR: <span id="s-col">#FFFFFF</span></div>
+  <div>STROKES: <span id="s-st">0</span></div>
+  <div class="sb-hint" style="margin-left:auto;font-size:7px;color:var(--dim)">MUZEIAN · CTRL+Z UNDO · CTRL+SHIFT+Z REDO · CTRL+S SAVE · D/E/M TOOLS</div>
+</div>
+
+<!-- ══════════ MOBILE BOTTOM TOOLBAR ══════════ -->
+<div id="mob-bar">
+  <button class="mbarbtn active" id="mbtn-draw" onclick="setTool('draw');closeMobActive(this)">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M13.5 1.5a1.5 1.5 0 0 1 0 2.12L5 12.12 2 13l.88-3L11.38 1.5a1.5 1.5 0 0 1 2.12 0z"/></svg>
+    <span>DRAW</span>
+  </button>
+  <button class="mbarbtn" id="mbtn-erase" onclick="setTool('erase');closeMobActive(this)">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M2 13h5l7-7-3-3L4 10l-2 3zm9.5-9.5 1 1-7 7-1-1 7-7z"/></svg>
+    <span>ERASE</span>
+  </button>
+  <button class="mbarbtn" id="mbtn-move" onclick="setTool('move');closeMobActive(this)">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 2l-2 2h4L8 2zm0 12 2-2H6l2 2zM2 8l2 2V6L2 8zm12 0-2-2v4l2-2zm-4-1H6a2 2 0 1 0 0 2h4a2 2 0 1 0 0-2z"/></svg>
+    <span>MOVE</span>
+  </button>
+  <button class="mbarbtn" onclick="undo()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M1.5 4.5A6.5 6.5 0 1 1 4 14H2v-2h2a4.5 4.5 0 1 0-1.77-3.5H4V10L1 7l3-3v2H2.5a6.52 6.52 0 0 1-.99-2.5z" fill-rule="evenodd"/></svg>
+    <span>UNDO</span>
+  </button>
+  <button class="mbarbtn" onclick="redo()">
+    <svg viewBox="0 0 16 16" fill="currentColor"><path d="M14.5 4.5A6.5 6.5 0 1 0 12 14h2v-2h-2a4.5 4.5 0 1 1 1.77-3.5H12V10l3-3-3-3v2h1.5a6.52 6.52 0 0 0 .99-2.5z" fill-rule="evenodd"/></svg>
+    <span>REDO</span>
+  </button>
+</div>
+
+<script>
+/* ─── ELEMENT REFS ─── */
+const mc    = document.getElementById('mc'),    ctx = mc.getContext('2d');
+const ov    = document.getElementById('ov'),    oct = ov.getContext('2d');
+const bgcEl = document.getElementById('bgc'),   bgc = bgcEl.getContext('2d');
+const prv   = document.getElementById('prev'),  pct = prv.getContext('2d');
+const cw    = document.getElementById('cw');
+const caEl  = document.getElementById('ca');
+
+function g(id){ return document.getElementById(id); }
+function up(id,v){ g(id).textContent = v; }
+function rnd(a,b){ return a + Math.random()*(b-a); }
+function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+function lerp(a,b,t){ return a + (b-a)*t; }
+function hexRgb(h){
+  return{ r:parseInt(h.slice(1,3),16), g:parseInt(h.slice(3,5),16), b:parseInt(h.slice(5,7),16) };
+}
+
+/* ─── STATE ─── */
+let W = 800, H = 600;
+let tool = 'draw', mode = 'lightning';
+let strokeColor = '#ffffff', bgCol = '#000000', transp = true;
+let isDown = false, history = [], redoStack = [], strokeCount = 0;
+let curPath = [], lastPath = null;
+let mvStart = null, mvSnap = null;
+let photoImage = null, hasPhoto = false;
+
+/* ─── INIT CANVAS ─── fills the entire #ca container ─── */
+function initCanvas(){
+  const r = caEl.getBoundingClientRect();
+  W = Math.floor(r.width)  || 800;
+  H = Math.floor(r.height) || 600;
+
+  mc.width  = W; mc.height  = H;
+  ov.width  = W; ov.height  = H;
+  bgcEl.width = W; bgcEl.height = H;
+
+  if(hasPhoto && photoImage) drawPhotoToCanvas();
+}
+
+function drawPhotoToCanvas(){
+  bgc.clearRect(0,0,W,H);
+  const s  = Math.min(W / photoImage.width, H / photoImage.height);
+  const sw = photoImage.width  * s;
+  const sh = photoImage.height * s;
+  bgc.drawImage(photoImage, (W-sw)/2, (H-sh)/2, sw, sh);
+}
+
+/* ─── BACKGROUND ─── */
+function applyBgToCanvas(){
+  if(!transp){
+    caEl.style.backgroundColor = bgCol;
+    caEl.style.backgroundImage = 'none';
+    caEl.classList.add('has-bg');
+  } else {
+    caEl.style.backgroundColor = '';
+    caEl.style.backgroundImage = '';
+    caEl.classList.remove('has-bg');
+  }
+  doPreview();
+}
+
+function onTranspChange(checked){
+  transp = checked;
+  applyBgToCanvas();
+}
+
+function setBg(c){
+  bgCol = c;
+  g('bgp').value = c;
+  g('t-transp').checked = false;
+  transp = false;
+  applyBgToCanvas();
+}
+
+/* ─── PHOTO UPLOAD ─── */
+function loadPhoto(input){
+  if(!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const img  = new Image();
+  img.onload = () => {
+    photoImage = img;
+    hasPhoto   = true;
+    drawPhotoToCanvas();
+    g('btnClearPhoto').style.display = 'block';
+    g('photoName').style.display     = 'block';
+    g('photoName').textContent       = file.name;
+    doPreview();
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+function clearPhoto(){
+  bgc.clearRect(0,0,W,H);
+  photoImage = null;
+  hasPhoto   = false;
+  g('btnClearPhoto').style.display = 'none';
+  g('photoName').style.display     = 'none';
+  g('imgUpload').value = '';
+  doPreview();
+}
+
+/* ─── UI HELPERS ─── */
+function setTool(t){
+  tool = t;
+  ['draw','erase','move'].forEach(x => {
+    const db = g('btn-'+x);
+    if(db) db.classList.toggle('active', x===t);
+    const mb = g('mbtn-'+x);
+    if(mb) mb.classList.toggle('active', x===t);
+  });
+  ov.style.cursor = t==='move' ? 'grab' : t==='erase' ? 'cell' : 'crosshair';
+  g('s-tool').textContent = t.toUpperCase();
+}
+
+function closeMobActive(el){
+  document.querySelectorAll('.mbarbtn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+
+function setMode(el){
+  mode = el.dataset.m;
+  document.querySelectorAll('.mbtn[data-m]').forEach(b => b.classList.toggle('on', b===el));
+  g('s-mode').textContent = mode.toUpperCase();
+}
+
+function tSec(h){ h.closest('.sec').classList.toggle('col'); }
+
+function setCol(v){
+  strokeColor = v;
+  g('cswatch').style.background = v;
+  g('chex').textContent = v.toUpperCase();
+  g('cpick').value = v;
+  g('cwheel').value = v;
+  g('s-col').textContent = v.toUpperCase();
+}
+
+function clearCanvas(){
+  saveH();
+  ctx.clearRect(0,0,W,H);
+  strokeCount = 0;
+  g('s-st').textContent = '0';
+  doPreview();
+}
+
+function savePNG(){
+  const out = document.createElement('canvas');
+  out.width = W; out.height = H;
+  const c   = out.getContext('2d');
+  if(!transp){ c.fillStyle = bgCol; c.fillRect(0,0,W,H); }
+  if(hasPhoto) c.drawImage(bgcEl, 0,0);
+  c.drawImage(mc, 0,0);
+  const a = document.createElement('a');
+  a.download = 'ngoyot-' + Date.now() + '.png';
+  a.href = out.toDataURL('image/png');
+  a.click();
+}
+
+/* ─── PARAMS ─── */
+function P(){
+  return {
+    freq:    +g('p-freq').value,
+    angle:   +g('p-angle').value * Math.PI/180,
+    depth:   +g('p-depth').value,
+    reduce:  +g('p-reduce').value / 100,
+    baseLen: +g('p-len').value,
+    thick:   +g('p-thick').value,
+    opa:     +g('p-opa').value / 100,
+    rough:   +g('p-rough').value / 100,
+    org:     +g('p-org').value / 100,
+    chaos:   +g('p-chaos').value / 100,
+    taper:   +g('p-taper').value / 100,
+    mirror:  g('t-mirror').checked,
+  };
+}
+
+/* ─── HISTORY ─── */
+function saveH(){
+  history.push(ctx.getImageData(0,0,W,H));
+  if(history.length > 40) history.shift();
+  redoStack = [];
+}
+function undo(){
+  if(!history.length) return;
+  redoStack.push(ctx.getImageData(0,0,W,H));
+  ctx.putImageData(history.pop(), 0,0);
+  doPreview();
+}
+function redo(){
+  if(!redoStack.length) return;
+  history.push(ctx.getImageData(0,0,W,H));
+  ctx.putImageData(redoStack.pop(), 0,0);
+  doPreview();
+}
+
+/* ─── PREVIEW ─── */
+function doPreview(){
+  const pw = prv.width = prv.offsetWidth || 200;
+  const ph = prv.height = 130;
+  pct.clearRect(0,0,pw,ph);
+  const cs = 5;
+  for(let y=0;y<ph;y+=cs){
+    for(let x=(Math.floor(y/cs)%2)*cs;x<pw;x+=cs*2){
+      pct.fillStyle='#1a1a1a'; pct.fillRect(x,y,cs,cs);
+      pct.fillStyle='#111';    pct.fillRect(x+cs,y,cs,cs);
+    }
+  }
+  if(!transp){ pct.fillStyle=bgCol; pct.fillRect(0,0,pw,ph); }
+  const s2 = Math.min(pw/W, ph/H);
+  const ox = (pw - W*s2)/2, oy = (ph - H*s2)/2;
+  if(hasPhoto) pct.drawImage(bgcEl, ox,oy, W*s2, H*s2);
+  pct.drawImage(mc, ox,oy, W*s2, H*s2);
+}
+
+/* ─── CANVAS COORDS ─── */
+function cpos(e){
+  const r  = ov.getBoundingClientRect();
+  const sx = W / r.width;
+  const sy = H / r.height;
+  const cx = (e.touches ? e.touches[0].clientX : e.clientX) - r.left;
+  const cy = (e.touches ? e.touches[0].clientY : e.clientY) - r.top;
+  return { x: cx*sx, y: cy*sy };
+}
+
+/* ─── CURSOR OVERLAY ─── */
+function drawCursor(x,y){
+  oct.clearRect(0,0,W,H);
+  const r = tool==='erase' ? +g('p-thick').value*2.5 : 3;
+  oct.beginPath(); oct.arc(x,y,Math.max(r,2),0,Math.PI*2);
+  oct.strokeStyle = tool==='erase' ? 'rgba(200,0,0,0.55)' : 'rgba(255,255,255,0.32)';
+  oct.lineWidth   = 1; oct.stroke();
+}
+
+/* ─── CTX SETUP ─── */
+function sc(p,col,w,a){
+  ctx.strokeStyle  = col;
+  ctx.lineWidth    = Math.max(0.15, w);
+  ctx.lineCap      = 'round';
+  ctx.lineJoin     = 'round';
+  ctx.globalAlpha  = a;
+  ctx.shadowBlur   = 0;
+}
+
+/* ══════════════════════════════════
+   BRANCH ALGORITHMS
+══════════════════════════════════ */
+
+/* LIGHTNING — angular ZZ */
+function bLightning(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<1.5) return;
+  const dr = dep/p.depth;
+  const segCount = Math.max(2, Math.floor(len/12));
+  const snapAng  = 15*Math.PI/180;
+  let cx=x,cy=y,cdx=dx,cdy=dy;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  for(let i=0;i<segCount;i++){
+    if(Math.random()<0.55+p.chaos*0.3){
+      const snaps = Math.round(rnd(-2,2))*snapAng*(1+p.chaos);
+      const cs=Math.cos(snaps),ss=Math.sin(snaps);
+      const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+      const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1; cdx=ndx/nl; cdy=ndy/nl;
+    }
+    cx+=cdx*(len/segCount); cy+=cdy*(len/segCount);
+    ctx.lineTo(cx,cy);
+  }
+  sc(p,col,w*(p.taper?lerp(0.2,1,dr):1), p.opa*(0.35+dr*0.65));
+  ctx.stroke(); ctx.shadowBlur=0;
+  const nf = p.chaos>0.5&&Math.random()<p.chaos ? 2 : Math.random()<0.6 ? 2 : 1;
+  for(let b=0;b<nf;b++){
+    if(Math.random()>p.freq/15) continue;
+    const ang = (b%2===0?1:-1)*p.angle*(0.8+rnd(0,0.5));
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    bLightning(cx,cy,ndx/nl,ndy/nl, len*p.reduce*(0.6+rnd(0,0.3)), w*p.reduce, dep-1,p,col);
+  }
+}
+
+/* ROOT — fibrous gravity roots */
+function bRoot(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<0.8) return;
+  const dr = dep/p.depth;
+  const grav = 0.4+p.org*0.6;
+  let cdx=dx, cdy=dy+grav;
+  const nl0=Math.sqrt(cdx*cdx+cdy*cdy)||1; cdx/=nl0; cdy/=nl0;
+  const steps = Math.max(5, Math.floor(len/5));
+  let cx=x,cy=y;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  for(let i=0;i<steps;i++){
+    cx+=cdx*(len/steps)+rnd(-p.rough*2,p.rough*2);
+    cy+=cdy*(len/steps)+rnd(-p.rough,p.rough*2);
+    ctx.lineTo(cx,cy);
+  }
+  sc(p,col,w*(p.taper?lerp(0.1,1,dr):1), p.opa*(0.25+dr*0.75));
+  ctx.stroke(); ctx.shadowBlur=0;
+  const nf = 3+Math.floor(p.org*5)+Math.floor(p.freq/4);
+  for(let b=0;b<nf;b++){
+    if(Math.random()>p.freq/15) continue;
+    const t   = rnd(0.2,1);
+    const bx  = x+(cx-x)*t, by=y+(cy-y)*t;
+    const ang = (Math.random()-0.5)*p.angle*2.5;
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    bRoot(bx,by,ndx/nl,ndy/nl, len*p.reduce*(0.3+rnd(0,0.5)), w*p.reduce*(0.5+rnd(0,0.4)), dep-1,p,col);
+  }
+}
+
+/* WEB — geometric spider web */
+function bWeb(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<1.5) return;
+  const dr = dep/p.depth;
+  const ex=x+dx*len, ey=y+dy*len;
+  ctx.beginPath(); ctx.moveTo(x,y); ctx.lineTo(ex,ey);
+  sc(p,col,w*(p.taper?lerp(0.2,1,dr):1), p.opa*dr);
+  ctx.stroke(); ctx.shadowBlur=0;
+  const rings = Math.max(1,Math.floor(dep*0.6));
+  for(let r=1;r<=rings;r++){
+    const t    = r/(rings+1);
+    const rx   = x+dx*len*t, ry=y+dy*len*t;
+    const perpX= -dy, perpY=dx;
+    const ringR= len*t*(0.3+p.org*0.3);
+    const pts  = 4+Math.floor(p.org*4);
+    ctx.beginPath();
+    for(let i=0;i<=pts;i++){
+      const ang=(i/pts)*Math.PI*2;
+      const px2=rx+Math.cos(ang)*ringR*0.5+perpX*ringR*(0.5+p.chaos*0.3);
+      const py2=ry+Math.sin(ang)*ringR*0.5+perpY*ringR*(0.5+p.chaos*0.3);
+      i===0 ? ctx.moveTo(px2,py2) : ctx.lineTo(px2,py2);
+    }
+    ctx.closePath();
+    sc(p,col,w*p.reduce,p.opa*dr*0.4);
+    ctx.stroke(); ctx.shadowBlur=0;
+  }
+  const nf = 2+Math.floor(p.chaos*2);
+  for(let b=0;b<nf;b++){
+    if(Math.random()>p.freq/13) continue;
+    const ang=(b/(nf-1||1)-0.5)*2*p.angle;
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=dx*cs-dy*ss, ndy=dx*ss+dy*cs;
+    bWeb(ex,ey,ndx,ndy, len*p.reduce, w*p.reduce, dep-1,p,col);
+  }
+}
+
+/* MYCELIUM — curvy wandering net */
+function bMycelium(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<0.8) return;
+  const dr = dep/p.depth;
+  const steps = Math.max(6, Math.floor(len/4));
+  let cx=x,cy=y,cdx=dx,cdy=dy;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  for(let i=0;i<steps;i++){
+    const curve=(rnd(-1,1))*p.org*0.12;
+    const cs=Math.cos(curve),ss=Math.sin(curve);
+    const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1; cdx=ndx/nl; cdy=ndy/nl;
+    cx+=cdx*(len/steps)+rnd(-p.rough,p.rough);
+    cy+=cdy*(len/steps)+rnd(-p.rough,p.rough);
+    ctx.lineTo(cx,cy);
+  }
+  sc(p,col,w*(p.taper?lerp(0.1,1,dr):1), p.opa*(0.3+dr*0.7));
+  ctx.stroke(); ctx.shadowBlur=0;
+  const nf=1+Math.floor(p.org*3+p.chaos);
+  for(let b=0;b<nf;b++){
+    if(Math.random()>p.freq/13) continue;
+    const ang=(Math.random()-0.5)*p.angle*2;
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    bMycelium(cx,cy,ndx/nl,ndy/nl, len*p.reduce*rnd(0.7,1.1), w*p.reduce, dep-1,p,col);
+  }
+}
+
+/* VESSEL — Y-fork blood vessels */
+function bVessel(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<0.8) return;
+  const dr = dep/p.depth;
+  const steps = Math.max(3, Math.floor(len/7));
+  let cx=x,cy=y;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  for(let i=0;i<steps;i++){
+    cx+=dx*(len/steps)+rnd(-p.rough,p.rough);
+    cy+=dy*(len/steps)+rnd(-p.rough,p.rough);
+    ctx.lineTo(cx,cy);
+  }
+  sc(p,col,w*(p.taper?lerp(0.08,1,dr):1), p.opa*(0.5+dr*0.5));
+  ctx.stroke(); ctx.shadowBlur=0;
+  const baseA = p.angle*(0.25+p.org*0.25);
+  [baseA*rnd(0.8,1.1), -baseA*rnd(0.5,0.8)].forEach((ang,bi)=>{
+    if(Math.random()>p.freq/14) return;
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=dx*cs-dy*ss, ndy=dx*ss+dy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    const ratio=bi===0?1:0.7;
+    bVessel(cx,cy,ndx/nl,ndy/nl, len*p.reduce*ratio, w*p.reduce*ratio, dep-1,p,col);
+  });
+}
+
+/* BRANCH — upward tree */
+function bBranch(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<1) return;
+  const dr   = dep/p.depth;
+  const anti = -0.25-p.org*0.35;
+  let cdx=dx,cdy=dy+anti;
+  const nl0=Math.sqrt(cdx*cdx+cdy*cdy)||1; cdx/=nl0; cdy/=nl0;
+  const steps = Math.max(3, Math.floor(len/7));
+  let cx=x,cy=y;
+  ctx.beginPath(); ctx.moveTo(cx,cy);
+  for(let i=0;i<steps;i++){
+    cx+=cdx*(len/steps)+rnd(-p.rough*2,p.rough*2);
+    cy+=cdy*(len/steps)+rnd(-p.rough*0.5,p.rough);
+    ctx.lineTo(cx,cy);
+  }
+  sc(p,col,w*(p.taper?lerp(0.1,1,dr):1), p.opa*(0.4+dr*0.6));
+  ctx.stroke(); ctx.shadowBlur=0;
+  const nf=2+Math.floor(p.org*2);
+  for(let b=0;b<nf;b++){
+    if(Math.random()>p.freq/14) continue;
+    const ang=(b/(nf-1||1)-0.5)*2*p.angle*rnd(0.6,1.2);
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=cdx*cs-cdy*ss, ndy=cdx*ss+cdy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    bBranch(cx,cy,ndx/nl,ndy/nl, len*p.reduce*rnd(0.6,0.9), w*p.reduce, dep-1,p,col);
+  }
+}
+
+/* CHAOS — rough pencil scrawl */
+function bChaos(x,y,dx,dy,len,w,dep,p,col){
+  if(dep<=0||len<0.8) return;
+  const dr     = dep/p.depth;
+  const nLines = 2+Math.floor(p.chaos*5);
+  for(let l=0;l<nLines;l++){
+    const offX=rnd(-w*2,w*2), offY=rnd(-w*2,w*2);
+    const cdx2=dx+rnd(-0.5,0.5)*p.chaos, cdy2=dy+rnd(-0.5,0.5)*p.chaos;
+    const nl2=Math.sqrt(cdx2*cdx2+cdy2*cdy2)||1;
+    const steps = Math.max(4, Math.floor(len/3));
+    let cx=x+offX,cy=y+offY;
+    ctx.beginPath(); ctx.moveTo(cx,cy);
+    for(let i=0;i<steps;i++){
+      cx+=cdx2/nl2*(len/steps)+rnd(-p.rough*7,p.rough*7);
+      cy+=cdy2/nl2*(len/steps)+rnd(-p.rough*7,p.rough*7);
+      ctx.lineTo(cx,cy);
+    }
+    sc(p,col, w*rnd(0.2,1.4)*(p.taper?lerp(0.1,1,dr):1), p.opa*rnd(0.15,0.7));
+    ctx.stroke(); ctx.shadowBlur=0;
+  }
+  if(dep>1&&Math.random()<p.freq/18){
+    const ang=(Math.random()-0.5)*Math.PI*(0.5+p.chaos);
+    const cs=Math.cos(ang),ss=Math.sin(ang);
+    const ndx=dx*cs-dy*ss, ndy=dx*ss+dy*cs;
+    const nl=Math.sqrt(ndx*ndx+ndy*ndy)||1;
+    bChaos(x+rnd(-4,4),y+rnd(-4,4),ndx/nl,ndy/nl, len*p.reduce*rnd(0.4,0.85), w*p.reduce, dep-1,p,col);
+  }
+}
+
+function spawn(x,y,dx,dy,len,w,dep,p,col){
+  switch(mode){
+    case 'lightning': bLightning(x,y,dx,dy,len,w,dep,p,col); break;
+    case 'root':      bRoot(x,y,dx,dy,len,w,dep,p,col);      break;
+    case 'web':       bWeb(x,y,dx,dy,len,w,dep,p,col);       break;
+    case 'mycelium':  bMycelium(x,y,dx,dy,len,w,dep,p,col);  break;
+    case 'vessel':    bVessel(x,y,dx,dy,len,w,dep,p,col);    break;
+    case 'branch':    bBranch(x,y,dx,dy,len,w,dep,p,col);    break;
+    case 'chaos':     bChaos(x,y,dx,dy,len,w,dep,p,col);     break;
+  }
+}
+
+function renderPath(path,p){
+  if(path.length<2) return;
+  for(let i=1;i<path.length;i++){
+    const a=path[i-1], b=path[i];
+    const ddx=b.x-a.x, ddy=b.y-a.y;
+    const dist=Math.sqrt(ddx*ddx+ddy*ddy);
+    if(dist<1) continue;
+    const ndx=ddx/dist, ndy=ddy/dist;
+    ctx.beginPath(); ctx.moveTo(a.x,a.y); ctx.lineTo(b.x,b.y);
+    sc(p,strokeColor,p.thick,p.opa); ctx.stroke(); ctx.shadowBlur=0;
+    if(Math.random()<p.freq/20){
+      const mx=(a.x+b.x)/2, my=(a.y+b.y)/2;
+      spawn(mx,my,ndx,ndy, p.baseLen, p.thick*p.reduce, p.depth, p, strokeColor);
+      if(p.mirror) spawn(W-mx,my,-ndx,ndy, p.baseLen, p.thick*p.reduce, p.depth, p, strokeColor);
+    }
+  }
+  ctx.globalAlpha=1; ctx.shadowBlur=0;
+}
+
+/* ─── MOUSE EVENTS ─── */
+ov.addEventListener('mousedown',e=>{
+  const pt = cpos(e);
+  if(tool==='move'){
+    mvStart = pt;
+    mvSnap  = ctx.getImageData(0,0,W,H);
+    ov.style.cursor = 'grabbing';
+    return;
+  }
+  isDown = true; saveH(); curPath = [pt];
+});
+
+ov.addEventListener('mousemove',e=>{
+  const pt = cpos(e);
+  g('s-pos').textContent  = ~~pt.x+','+~~pt.y;
+  g('ci-pos').textContent = ~~pt.x+','+~~pt.y;
+  drawCursor(pt.x, pt.y);
+
+  if(tool==='move' && mvStart && mvSnap){
+    const ddx=pt.x-mvStart.x, ddy=pt.y-mvStart.y;
+    ctx.clearRect(0,0,W,H);
+    ctx.putImageData(mvSnap, ~~ddx, ~~ddy);
+    doPreview(); return;
+  }
+  if(!isDown) return;
+  if(tool==='erase'){
+    const r = +g('p-thick').value * 2.5;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2);
+    ctx.fillStyle = 'rgba(0,0,0,1)'; ctx.fill();
+    ctx.globalCompositeOperation = 'source-over';
+    doPreview(); return;
+  }
+  curPath.push(pt);
+  if(curPath.length>=2){
+    renderPath([curPath[curPath.length-2], curPath[curPath.length-1]], P());
+    doPreview();
+  }
+});
+
+ov.addEventListener('mouseup',e=>{
+  if(tool==='move' && mvStart){
+    mvStart = null; mvSnap = null;
+    ov.style.cursor = 'grab';
+    doPreview(); return;
+  }
+  if(!isDown) return;
+  isDown = false;
+  if(curPath.length){ lastPath=[...curPath]; strokeCount++; g('s-st').textContent=strokeCount; }
+  curPath = []; ctx.globalAlpha=1; doPreview();
+});
+
+ov.addEventListener('mouseleave',()=>{
+  oct.clearRect(0,0,W,H);
+  if(isDown){ isDown=false; ctx.globalAlpha=1; doPreview(); }
+  if(mvStart){ mvStart=null; mvSnap=null; }
+});
+
+/* ─── TOUCH EVENTS ─── */
+ov.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const pt=cpos(e);
+  if(tool==='move'){
+    mvStart = pt;
+    mvSnap  = ctx.getImageData(0,0,W,H);
+    return;
+  }
+  isDown=true; saveH(); curPath=[pt];
+},{passive:false});
+
+ov.addEventListener('touchmove',e=>{
+  e.preventDefault();
+  const pt=cpos(e);
+  g('ci-pos').textContent = ~~pt.x+','+~~pt.y;
+
+  if(tool==='move' && mvStart && mvSnap){
+    const ddx=pt.x-mvStart.x, ddy=pt.y-mvStart.y;
+    ctx.clearRect(0,0,W,H);
+    ctx.putImageData(mvSnap, ~~ddx, ~~ddy);
+    doPreview(); return;
+  }
+  if(tool==='erase'){
+    const r = +g('p-thick').value * 2.5;
+    ctx.globalCompositeOperation = 'destination-out';
+    ctx.beginPath(); ctx.arc(pt.x,pt.y,r,0,Math.PI*2);
+    ctx.fillStyle='rgba(0,0,0,1)'; ctx.fill();
+    ctx.globalCompositeOperation='source-over';
+    doPreview(); return;
+  }
+  curPath.push(pt);
+  if(curPath.length>=2){
+    renderPath([curPath[curPath.length-2],pt],P()); doPreview();
+  }
+},{passive:false});
+
+ov.addEventListener('touchend',e=>{
+  e.preventDefault();
+  if(tool==='move' && mvStart){
+    mvStart=null; mvSnap=null; doPreview(); return;
+  }
+  if(!isDown) return;
+  isDown=false;
+  if(curPath.length){ lastPath=[...curPath]; strokeCount++; g('s-st').textContent=strokeCount; }
+  curPath=[]; ctx.globalAlpha=1; doPreview();
+},{passive:false});
+
+/* ─── KEYBOARD ─── */
+document.addEventListener('keydown',e=>{
+  const ctrl = e.ctrlKey || e.metaKey;
+  if(ctrl && e.shiftKey && (e.key==='z'||e.key==='Z')){ e.preventDefault(); redo(); return; }
+  if(ctrl && e.key==='z'){ e.preventDefault(); undo(); return; }
+  if(ctrl && e.key==='y'){ e.preventDefault(); redo(); return; }
+  if(ctrl && e.key==='s'){ e.preventDefault(); savePNG(); return; }
+  if(!ctrl){
+    if(e.key==='d') setTool('draw');
+    if(e.key==='e') setTool('erase');
+    if(e.key==='m') setTool('move');
+  }
+});
+
+/* ─── RESIZE ─── */
+window.addEventListener('resize',()=>{
+  const snap  = ctx.getImageData(0,0,W,H);
+  const bgSnap = bgc.getImageData(0,0,W,H);
+  initCanvas();
+  ctx.putImageData(snap,0,0);
+  if(hasPhoto) bgc.putImageData(bgSnap,0,0);
+  doPreview();
+});
+
+/* ─── MOBILE DRAWER FUNCTIONS ─── */
+function toggleLeft(){
+  const left = g('left');
+  const overlay = g('mob-overlay');
+  const isOpen = left.classList.contains('mob-open');
+  closeDrawers();
+  if(!isOpen){
+    left.classList.add('mob-open');
+    overlay.classList.add('show');
+  }
+}
+
+function toggleRight(){
+  const right = g('right');
+  const overlay = g('mob-overlay');
+  const isOpen = right.classList.contains('mob-open');
+  closeDrawers();
+  if(!isOpen){
+    right.classList.add('mob-open');
+    overlay.classList.add('show');
+  }
+}
+
+function closeDrawers(){
+  g('left').classList.remove('mob-open');
+  g('right').classList.remove('mob-open');
+  g('mob-overlay').classList.remove('show');
+}
+
+/* ─── BOOT ─── */
+initCanvas();
+setCol('#ffffff');
+setTimeout(doPreview, 150);
+</script>
+</body>
+</html>
