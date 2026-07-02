@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Ngefont - Lightweight Font Editor</title>
     <meta name="description" content="Create fonts directly in your browser. 100% offline, lightweight, and works on mobile.">
-    <link rel="manifest" href="/manifest.json">
+    <link rel="manifest" href="./manifest.json">
     <meta name="theme-color" content="#121212">
     
     <!-- Load Tailwind via Browser CDN for instant development preview -->
@@ -20,12 +20,12 @@
       console.log('[Ngefont] FontFlux loaded successfully.');
     </script>
     
-    <link rel="stylesheet" href="/src/style.css">
+    <link rel="stylesheet" href="./src/style.css">
     
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW reg failed', err));
+          navigator.serviceWorker.register('./sw.js').catch(err => console.error('SW reg failed', err));
         });
       }
     </script>
@@ -211,7 +211,6 @@
     </aside>
   </div>
 
-<script type="module" src="/src/main.js"></script>
-
+  <script type="module" src="./src/main.js"></script>
 </body>
 </html>
