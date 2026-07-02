@@ -1,11 +1,194 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <title>stafatorrentnet</title>
+    <meta charset="UTF-8">
+    <title>STAFATORRENTNET - INDEX</title>
+    <!-- Menambahkan Favicon -->
+    <link rel="icon" href="SFN.png" type="image/png">
+    
+    <style>
+        @font-face {
+            font-family: 'PixelOperator';
+            src: url('PixelOperator.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
+        body {
+            background-color: #000000;
+            color: #00FF00;
+            font-family: 'PixelOperator', "Courier New", Courier, monospace;
+            margin: 40px auto;
+            max-width: 800px;
+            text-align: center;
+            font-size: 18px; 
+            position: relative;
+        }
+        
+        a {
+            color: #00FF00;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        
+        a:hover {
+            color: #000000;
+            background-color: #00FF00;
+            cursor: pointer;
+        }
+
+        .lang-btn.active {
+            background-color: #00FF00;
+            color: #000000;
+        }
+
+        .lang-menu {
+            position: absolute;
+            top: 0;
+            right: 10px;
+            font-size: 0.9em;
+            padding: 5px 0;
+            background-color: #000000;
+        }
+        
+        .lang-menu a {
+            padding: 2px 5px;
+            margin: 0 2px;
+        }
+
+        .intro-text {
+            margin: 40px auto 20px auto;
+            max-width: 600px;
+            line-height: 1.5;
+        }
+
+        ul {
+            list-style-type: none;
+            text-align: left;
+            display: inline-block;
+            padding: 0;
+        }
+
+        li {
+            margin: 25px 0;
+        }
+
+        .desc {
+            display: block;
+            margin-top: 5px;
+            margin-left: 20px;
+            font-size: 0.9em;
+            color: #009900;
+        }
+
+        .logo {
+            max-width: 100%;
+            height: auto;
+            image-rendering: pixelated; 
+        }
+
+        @media (max-width: 850px) {
+            .lang-menu {
+                position: static;
+                display: inline-block;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
 </head>
 <body>
-  <h1>Under Construction</h1>
-  <p>XXX-XXX-XXX.</p>
+
+    <center>
+        <div class="lang-menu">
+            [ <a class="lang-btn" data-lang-target="id" onclick="setLang('id')">ID</a> | 
+              <a class="lang-btn" data-lang-target="en" onclick="setLang('en')">EN</a> | 
+              <a class="lang-btn" data-lang-target="jv" onclick="setLang('jv')">JV</a> ]
+        </div>
+
+        <img src="Logo.png" alt="StafaTorrentNet Logo" class="logo">
+        <br><br>
+        
+        <p class="intro-text" data-i18n="intro">
+            Stafatorrentnet adalah repositori arsip digital tempat menyimpan berbagai macam proyek pengkodean eksperimental yang dibuat oleh Muzeian.
+        </p>
+        
+        <br>
+        
+        <h2 data-i18n="title">[ PROYEK ]</h2>
+        
+        <ul id="project-list">
+            <li>
+                <a href="https://stafatorrentnet.github.io/azab-prompter-laknat/">> Azab Prompter Laknat - Digitalis Imortalus Doom Systemis Warnet</a>
+                <span class="desc" data-i18n="azab">Pengalaman noise generatif berdurasi 25 jam. Dengarkan frekuensi penderitaan abadi dari seorang prompter yang terjebak di Stafatorrentnet, mesin siksaan digital yang tak kenal ampun.</span>
+            </li>
+            <li>
+                <a href="https://stafatorrentnet.github.io/ngoyot-type/">> Ngoyot Type</a>
+                <span class="desc" data-i18n="ngoyot">Wahana kaligrafi kengerian praktis. Bebaskan instingmv, srat sret srot tanpa batasan, dan wujvdkan karya kaligrafi rvwet bernuansa gelap dalam sekedip mata.</span>
+            </li>
+            <li>
+                <a href="https://stafatorrentnet.github.io/wali-x/">> WALI X</a>
+                <span class="desc" data-i18n="walix">Sebuah cermin filosofis di persimpangan teknologi dan spiritualitas. Awali dengan sapaan leluhur, dan berdialoglah dengan entitas AI yang mewujudkan kebijaksanaan Wali Songo.</span>
+            </li>
+            <li>
+                <a href="https://stafatorrentnet.github.io/Ngefont/">> Ngefont!</a>
+                <span class="desc" data-i18n="ngefont">Aplikasi web pembuat font yang praktis dan mudah digunakan. Dirancang untuk semua kalangan, platform ini memungkinkan siapa saja untuk menciptakan font impian langsung dari browser.</span>
+            </li>
+        </ul>
+        
+        <br><br>
+        <p><small>&copy; 2026 - Muzeian</small></p>
+    </center>
+
+    <script>
+        const translations = {
+            id: {
+                intro: "Stafatorrentnet adalah repositori arsip digital tempat menyimpan berbagai macam proyek pengkodean eksperimental yang dibuat oleh Muzeian.",
+                title: "[ PROYEK ]",
+                azab: "Pengalaman noise generatif berdurasi 25 jam. Dengarkan frekuensi penderitaan abadi dari seorang prompter yang terjebak di Stafatorrentnet, mesin siksaan digital yang tak kenal ampun.",
+                ngoyot: "Wahana kaligrafi kengerian praktis. Bebaskan instingmv, srat sret srot tanpa batasan, dan wujvdkan karya kaligrafi rvwet bernuansa gelap dalam sekedip mata.",
+                walix: "Sebuah cermin filosofis di persimpangan teknologi dan spiritualitas. Awali dengan sapaan leluhur, dan berdialoglah dengan entitas AI yang mewujudkan kebijaksanaan Wali Songo.",
+                ngefont: "Aplikasi web pembuat font yang praktis dan mudah digunakan. Dirancang untuk semua kalangan, platform ini memungkinkan siapa saja untuk menciptakan font impian langsung dari browser."
+            },
+            en: {
+                intro: "Stafatorrentnet is a digital archive repository for storing various experimental coding projects created by Muzeian.",
+                title: "[ PROJECTS ]",
+                azab: "A 25-hour generative noise experience. Listen to the eternal frequencies of suffering from a prompter trapped in Stafatorrentnet, an unforgiving digital torture machine.",
+                ngoyot: "A practical vehicle for calligraphy of horror. Unleash your instincts, scribble without limits, and manifest complex dark-nuanced calligraphy in the blink of an eye.",
+                walix: "A philosophical mirror at the intersection of technology and spirituality. Begin with an ancestral greeting, and dialogue with an AI entity that embodies the wisdom of the Wali Songo.",
+                ngefont: "A practical and easy-to-use web application for creating fonts. Designed for everyone, this platform allows anyone to create their dream font directly from the browser."
+            },
+            jv: {
+                intro: "Stafatorrentnet minangka panyimpenan arsip digital kanggo nyimpen macem-macem proyek pengkodean eksperimen sing digawe dening Muzeian.",
+                title: "[ PROYEK ]",
+                azab: "Pengalaman noise generatif 25 jam. Rungokake frekuensi kasangsaran abadi saka prompter sing kejebak ing Stafatorrentnet, mesin siksaan digital sing tanpa ampun.",
+                ngoyot: "Wahana kaligrafi medeni sing praktis. Bebasake instingmu, srat sret srot tanpa wates, lan wujudake karya kaligrafi ruwet sing nggawa nuansa peteng sak kedhepan mripat.",
+                walix: "Pangilon filosofis ing persimpangan teknologi lan spiritualitas. Wiwiti kanthi sapaan leluhur, lan dialog karo entitas AI sing mujudake kawicaksanan Wali Songo.",
+                ngefont: "Aplikasi web panggawé font sing praktis lan gampang digunakake. Dirancang kanggo sapa wae, platform iki ngidini kabeh wong nggawe font impen langsung saka browser."
+            }
+        };
+
+        function setLang(lang) {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (translations[lang] && translations[lang][key]) {
+                    el.innerText = translations[lang][key];
+                }
+            });
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.classList.remove('active');
+                if (btn.getAttribute('data-lang-target') === lang) {
+                    btn.classList.add('active');
+                }
+            });
+
+            localStorage.setItem('stafaLang', lang);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedLang = localStorage.getItem('stafaLang') || 'en';
+            setLang(savedLang);
+        });
+    </script>
 </body>
 </html>
