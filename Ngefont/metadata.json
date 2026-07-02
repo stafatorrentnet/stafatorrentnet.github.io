@@ -1,0 +1,10 @@
+{
+  "name": "Ngefont",
+  "description": "A SPA web app to create custom fonts by assigning images or drawings to characters, adjusting their properties, and exporting the final font.",
+  "requestFramePermissions": [
+    "camera"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

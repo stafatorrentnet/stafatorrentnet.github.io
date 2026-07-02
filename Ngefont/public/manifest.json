@@ -1,0 +1,16 @@
+{
+  "name": "Ngefont",
+  "short_name": "Ngefont",
+  "description": "Lightweight client-side font creator.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0F0F0F",
+  "theme_color": "#121212",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0id2hpdGUiPjx0ZXh0IHg9IjQiIHk9IjIwIiBmb250LXNpemU9IjI0Ij5OPC90ZXh0Pjwvc3ZnPg==",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}

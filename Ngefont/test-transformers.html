@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="cvs" width="10" height="10"></canvas>
+<script type="module">
+  import { pipeline, env, RawImage } from 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@4.2.0/+esm';
+  env.allowLocalModels = false;
+  
+  (async function() {
+    try {
+      console.log('Loading segmenter...');
+      const segmenter = await pipeline("image-segmentation", "briaai/RMBG-1.4");
+      
+      const cvs = document.getElementById('cvs');
+      const ctx = cvs.getContext('2d');
+      ctx.fillStyle = 'red'; ctx.fillRect(2,2,6,6); // a red square
+      const dataUrl = cvs.toDataURL();
+      const rawImg = await RawImage.fromURL(dataUrl);
+      
+      console.log('Segmenting...');
+      const result = await segmenter(rawImg);
+      console.log('Result type:', Array.isArray(result) ? 'Array' : typeof result);
+      console.log('Result:', result);
+      
+      window.testDone = 'success briaai';
+    } catch(e) {
+      console.error(e);
+      window.testDone = 'error: ' + e.message;
+    }
+  })();
+</script>
+</body>
+</html>

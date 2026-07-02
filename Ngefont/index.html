@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en" style="height: 100%; margin: 0;">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ngefont - Lightweight Font Editor</title>
+    <meta name="description" content="Create fonts directly in your browser. 100% offline, lightweight, and works on mobile.">
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#121212">
+    
+    <!-- Load Tailwind via Browser CDN for instant development preview -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/imagetracerjs@1.2.6/imagetracer_v1.2.6.js"></script>
+    
+    <!-- Load FontFlux -->
+    <script type="module">
+      import { FontFlux } from 'https://cdn.jsdelivr.net/npm/font-flux-js/+esm';
+      window._FontFlux = FontFlux;
+      console.log('[Ngefont] FontFlux loaded successfully.');
+    </script>
+    
+    <link rel="stylesheet" href="/src/style.css">
+    
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('/sw.js').catch(err => console.error('SW reg failed', err));
+        });
+      }
+    </script>
+</head>
+<body class="flex flex-col h-full w-full bg-[#0F0F0F] text-gray-200 font-sans overflow-hidden">
+
+  <!-- Header -->
+  <header class="h-16 flex items-center justify-between px-4 md:px-6 border-b border-white/10 bg-[#121212] z-40 relative">
+    <div class="flex items-center gap-3">
+      <button id="btn-toggle-drawer" class="md:hidden flex items-center justify-center p-2 bg-white/5 border border-white/10 rounded-md text-white hover:bg-white/10">
+        <span class="material-symbols-outlined text-[20px]">menu</span>
+      </button>
+      <h1 id="dynamic-title" class="text-xl md:text-2xl tracking-tighter cursor-pointer select-none" title="Ngefont">Ngefont</h1>
+    </div>
+    <div class="flex items-center gap-2 md:gap-3">
+      <button class="px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2" id="btn-load-project"><span class="material-symbols-outlined text-[16px] hidden md:block">folder_open</span> <span class="hidden md:inline">Load Project</span><span class="md:hidden">Load</span></button>
+      <input type="file" id="file-load-project" accept=".ngefont" hidden />
+      <button class="px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 md:mr-4" id="btn-save-project"><span class="material-symbols-outlined text-[16px] hidden md:block">save</span> <span class="hidden md:inline">Save Project</span><span class="md:hidden">Save</span></button>
+      <div class="w-px h-6 bg-white/20 mr-1 md:mr-2 hidden md:block"></div>
+      <input type="text" id="export-filename" value="Ngefont" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-3 py-2 outline-none w-32 focus:border-white/50" />
+      <select id="export-format" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-2 py-2 outline-none focus:border-white/50">
+        <option value="otf">.otf</option>
+        <option value="ttf">.ttf</option>
+        <option value="woff">.woff</option>
+        <option value="woff2">.woff2</option>
+      </select>
+      <button class="px-4 md:px-6 py-2 bg-white text-black text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors" id="btn-export">Export</button>
+    </div>
+  </header>
+
+  <div class="flex flex-1 overflow-hidden relative">
+    <!-- Left Sidebar / Mobile Drawer -->
+    <aside id="char-grid-container" class="w-full md:w-64 md:border-r border-white/10 flex flex-col bg-[#111111] absolute md:relative z-30 h-full">
+
+      <div class="p-4 border-b border-white/5 flex justify-between items-center">
+        <span class="text-[10px] text-gray-500 uppercase tracking-widest">Glyph Library</span>
+      </div>
+      <div class="grid grid-cols-4 gap-1 p-2 overflow-y-auto" id="char-grid"></div>
+      <div class="mt-auto p-4 border-t border-white/5">
+        <div class="flex justify-between text-[10px] uppercase text-gray-500">
+          <span id="populated-count">Populated: 0 / 0</span>
+        </div>
+        <div class="w-full bg-white/5 h-1 mt-2">
+          <div class="bg-white h-full w-[0%]" id="populated-bar"></div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Workspace -->
+    <main id="workspace" class="flex-1 bg-[#0a0a0a] flex flex-col relative overflow-hidden">
+      <!-- Toolbar -->
+      <div class="absolute top-6 left-6 z-10 w-24">
+        <div class="grid grid-cols-2 gap-2 mb-3">
+          <button id="btn-draw"     class="w-10 h-10 bg-white border border-white flex items-center justify-center text-black hover:bg-gray-200 transition-colors" title="Draw"><span class="material-symbols-outlined opacity-80 text-[20px]">edit</span></button>
+          <button id="btn-eraser"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Eraser"><span class="material-symbols-outlined opacity-80 text-[20px]">ink_eraser</span></button>
+          <button id="btn-move"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Transform / Move"><span class="material-symbols-outlined opacity-80 text-[20px]">transform</span></button>
+          <button id="btn-clear"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Clear"><span class="material-symbols-outlined opacity-80 text-[20px]">delete</span></button>
+          <button id="btn-camera"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Camera"><span class="material-symbols-outlined opacity-80 text-[20px]">photo_camera</span></button>
+          <button id="btn-upload"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Upload Image"><span class="material-symbols-outlined opacity-80 text-[20px]">folder_open</span></button>
+          <input type="file" id="file-upload" accept="image/*" hidden />
+          <button id="btn-undo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Undo (Cmd/Ctrl + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">undo</span></button>
+          <button id="btn-redo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Redo (Cmd/Ctrl + Shift + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">redo</span></button>
+          <button id="btn-ai-bg"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="AI Background Removal"><span class="material-symbols-outlined opacity-80 text-[20px]">magic_button</span></button>
+          <button id="btn-autocrop" class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Crop"><span class="material-symbols-outlined opacity-80 text-[20px]">crop</span></button>
+        </div>
+        
+        <!-- Brush Size -->
+        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center" id="brush-size-container">
+          <label class="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Brush Size <span id="brush-size-val" class="text-white">15</span></label>
+          <input type="range" id="brush-size" min="1" max="100" value="15" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
+        </div>
+      </div>
+
+      <!-- Canvas area -->
+      <div class="flex-1 flex flex-col items-center justify-center p-12">
+        <div class="text-center mb-6">
+          <span class="text-[10px] text-gray-500 uppercase tracking-widest">Editing Glyph <span id="active-char-label" class="text-white font-bold text-lg ml-2">A</span></span>
+        </div>
+        
+        <!-- Canvas Stack -->
+        <div class="h-full max-h-[70vh] aspect-square relative border-2 border-white/20 shadow-2xl bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] bg-[size:20px_20px]">
+          <canvas id="main-canvas" width="512" height="512" class="absolute inset-0 w-full h-full z-0" style="cursor:crosshair;"></canvas>
+          <canvas id="guide-canvas" width="512" height="512" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
+          <canvas id="transform-overlay" width="1536" height="1536" class="absolute z-20 pointer-events-none" style="width: 300%; height: 300%; top: -100%; left: -100%;"></canvas>
+          <video id="camera-video" autoplay playsinline hidden class="absolute inset-0 w-full h-full object-cover z-30 bg-black"></video>
+          <button id="btn-capture" hidden class="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-2 bg-white text-black font-bold uppercase tracking-widest text-xs hover:bg-gray-200">Capture</button>
+          <button id="btn-apply-crop" hidden class="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 px-6 py-2 bg-green-500 text-white font-bold uppercase tracking-widest text-xs hover:bg-green-600 shadow-lg border border-green-400">Apply Crop</button>
+          
+          <!-- AI Processing Overlay -->
+          <div id="ai-loading-overlay" class="absolute inset-0 z-50 hidden items-center justify-center" style="backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(0,0,0,0.5);">
+            <div class="flex flex-col items-center gap-4">
+              <div class="w-10 h-10 border-3 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <span class="text-white text-xs uppercase tracking-widest font-medium">AI Removing Background...</span>
+              <span id="ai-loading-status" class="text-gray-400 text-[10px]">Downloading model (~40MB first time)...</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2 mt-3">
+          <label class="text-[10px] text-gray-500 uppercase tracking-widest flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="toggle-guides" checked class="accent-white"> Show Guides
+          </label>
+        </div>
+      </div>
+
+      <!-- Live Preview -->
+      <div class="h-40 border-t border-white/10 bg-[#0c0c0c] p-6 flex flex-col">
+        <div class="flex justify-between mb-2">
+          <span class="text-[10px] text-gray-500 uppercase tracking-widest">Type Testing / Live Rendering</span>
+          <div class="flex items-center gap-4">
+            <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors w-48" />
+          </div>
+        </div>
+        <!-- Raster Live Preview wrapper -->
+        <div id="preview-render" class="h-full whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline pt-2 pb-2 gap-[2px]"></div>
+      </div>
+    </main>
+
+    <!-- Right Sidebar -->
+    <aside class="w-[320px] border-l border-white/10 bg-[#111111] flex flex-col">
+      <div class="p-6 space-y-8 flex-1 overflow-y-auto">
+        <section>
+          <h3 class="text-[10px] uppercase tracking-widest text-white mb-6 border-b border-white/10 pb-2">Image Filters</h3>
+          <div class="space-y-5">
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <label>Threshold Removal</label>
+                <span id="val-bg" class="text-gray-400">20</span>
+              </div>
+              <input type="range" id="slider-bg" min="0" max="100" value="20" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-2">
+                <label>Floyd-Steinberg Dither</label>
+                <span id="val-dither" class="text-gray-400">0</span>
+              </div>
+              <input type="range" id="slider-dither" min="0" max="100" value="0" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+          </div>
+        </section>
+        <section>
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-[10px] uppercase tracking-widest text-white">Kerning Groups</h3>
+            <button id="btn-new-kern" class="text-[10px] uppercase tracking-widest text-green-400 hover:text-green-300 transition-colors cursor-pointer bg-transparent border-none">+ New</button>
+          </div>
+          <div class="space-y-1 mb-4" id="kerning-list"></div>
+          
+          <!-- Kern Group Edit Panel (hidden by default) -->
+          <div id="kern-edit-panel" class="hidden space-y-3 border-t border-white/10 pt-4">
+            <div class="text-[10px] uppercase tracking-widest text-gray-400 mb-2">Editing: <span id="kern-edit-label" class="text-white">Group 1</span></div>
+            <div>
+              <label class="text-[9px] uppercase tracking-widest text-gray-500 block mb-1">Left Group</label>
+              <input type="text" id="kern-left" placeholder="e.g. AÀÁ" class="w-full bg-white/5 border border-white/10 text-white text-xs p-2 outline-none focus:border-white/30 font-mono" />
+            </div>
+            <div>
+              <label class="text-[9px] uppercase tracking-widest text-gray-500 block mb-1">Right Group</label>
+              <input type="text" id="kern-right" placeholder="e.g. TV" class="w-full bg-white/5 border border-white/10 text-white text-xs p-2 outline-none focus:border-white/30 font-mono" />
+            </div>
+            <div>
+              <label class="text-[9px] uppercase tracking-widest text-gray-500 block mb-1">Value (em)</label>
+              <div class="flex items-center gap-1">
+                <button id="kern-val-down" class="w-8 h-8 bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors text-xs font-bold cursor-pointer">▼</button>
+                <input type="number" id="kern-value" step="0.01" value="0" class="flex-1 bg-white/5 border border-white/10 text-white text-xs p-2 outline-none focus:border-white/30 text-center font-mono" />
+                <button id="kern-val-up" class="w-8 h-8 bg-white/5 border border-white/10 text-white flex items-center justify-center hover:bg-white/20 transition-colors text-xs font-bold cursor-pointer">▲</button>
+              </div>
+            </div>
+            <button id="btn-delete-kern" class="w-full py-2 bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] uppercase tracking-widest hover:bg-red-500/20 transition-colors cursor-pointer">Hapus Kern Group</button>
+          </div>
+        </section>
+      </div>
+      <div class="mt-auto p-6 bg-[#0c0c0c]">
+        <div class="flex items-start gap-3 p-3 border border-white/10 mb-4">
+          <div class="w-2 h-2 mt-1 rounded-full bg-green-500 animate-pulse"></div>
+          <p class="text-[10px] leading-relaxed text-gray-400">
+            <strong class="text-white block mb-1 uppercase tracking-tighter">Engine Status</strong>
+            Vectorization activates on Export.
+          </p>
+        </div>
+        <div class="text-center text-[10px] text-gray-600 tracking-widest uppercase">
+          2026 - Stafatorrentnet - Muzeian
+        </div>
+      </div>
+    </aside>
+  </div>
+
+<script type="module" src="/src/main.js"></script>
+
+</body>
+</html>
