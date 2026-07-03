@@ -151,9 +151,15 @@
       <!-- Live Preview (relocated into the Settings drawer on mobile via JS; stays here on desktop) -->
       <div id="live-preview-anchor"></div>
       <div id="live-preview-block" class="flex h-24 md:h-40 border-t border-white/10 bg-[#0c0c0c] p-3 md:p-6 flex-col shrink-0">
-        <div class="flex flex-col md:flex-row justify-between mb-2 gap-2">
+        <div class="flex flex-col md:flex-row justify-between items-center mb-2 gap-2">
           <span class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest hidden md:block">Type Testing / Live Rendering</span>
-          <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors w-full md:w-48" />
+          <div class="flex items-center gap-3 w-full md:w-auto">
+            <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors flex-1 md:w-48" />
+            <div class="flex items-center gap-1 shrink-0">
+              <span class="material-symbols-outlined text-[14px] text-white/50">format_size</span>
+              <input type="range" id="preview-font-size" min="16" max="120" value="48" class="w-16 md:w-24">
+            </div>
+          </div>
         </div>
         <!-- Raster Live Preview wrapper: white backdrop + black glyphs, like paper/ink -->
         <div id="preview-render" class="flex-1 whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline gap-[2px] bg-white rounded-md px-3"></div>
@@ -325,5 +331,33 @@
   <div id="drawer-backdrop" class="drawer-backdrop hidden"></div>
 
   <script type="module" src="./src/main.js"></script>
+
+<!-- Modal Export & Save untuk Mobile -->
+<div id="mobile-export-modal" class="fixed inset-0 bg-black/80 z-[60] hidden flex-col items-center justify-center p-4 backdrop-blur-sm">
+    <div class="bg-[#1a1a1a] border border-white/20 rounded-xl p-5 w-full max-w-xs flex flex-col gap-4 shadow-2xl">
+        <h3 class="text-white font-bold text-lg" id="modal-action-title">Export Font</h3>
+        
+        <div class="flex flex-col gap-1.5">
+            <label class="text-[10px] text-white/50 uppercase tracking-widest">Nama File</label>
+            <input type="text" id="modal-filename" class="bg-[#111] border border-white/20 text-white px-3 py-2 rounded-md outline-none focus:border-white/50 w-full text-sm" />
+        </div>
+
+        <div class="flex flex-col gap-1.5" id="modal-format-container">
+            <label class="text-[10px] text-white/50 uppercase tracking-widest">Format Font</label>
+            <select id="modal-format" class="bg-[#111] border border-white/20 text-white px-3 py-2 rounded-md outline-none focus:border-white/50 w-full text-sm">
+                <option value="otf">.otf</option>
+                <option value="ttf">.ttf</option>
+                <option value="woff">.woff</option>
+                <option value="woff2">.woff2</option>
+            </select>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-2">
+            <button id="btn-modal-cancel" class="px-4 py-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest">Batal</button>
+            <button id="btn-modal-confirm" class="px-4 py-2 bg-white text-black rounded-md text-xs font-bold uppercase tracking-widest">Proses</button>
+        </div>
+    </div>
+</div>
+
 </body>
 </html>

@@ -1524,3 +1524,132 @@ if (dynamicTitle) {
 
     setInterval(animateTitle, 300);
 }
+
+
+// ─── LIVE PREVIEW FONT SIZE SLIDER ────────────────────────────────────
+const previewFontSize = document.getElementById('preview-font-size');
+const renderArea = document.getElementById('preview-render');
+
+if (previewFontSize && renderArea) {
+    previewFontSize.addEventListener('input', (e) => {
+        renderArea.style.fontSize = `${e.target.value}px`;
+    });
+}
+
+// ─── INDIKATOR DIAMETER BRUSH ─────────────────────────────────────────
+let pointerX = -1000;
+let pointerY = -1000;
+
+mainCanvas.addEventListener('pointermove', (e) => {
+    const rect = mainCanvas.getBoundingClientRect();
+    const scaleX = 512 / rect.width;
+    const scaleY = 512 / rect.height;
+    pointerX = (e.clientX - rect.left) * scaleX;
+    pointerY = (e.clientY - rect.top) * scaleY;
+    
+    if (currentTool === 'draw' || currentTool === 'erase') {
+        drawBrushCursor();
+    }
+});
+
+mainCanvas.addEventListener('pointerleave', () => {
+    if (currentTool === 'draw' || currentTool === 'erase') {
+        transformCtx.clearRect(0, 0, 1536, 1536);
+    }
+});
+
+function drawBrushCursor() {
+    if (currentTool !== 'draw' && currentTool !== 'erase') return;
+    
+    transformCtx.clearRect(0, 0, 1536, 1536);
+    const size = parseInt(document.getElementById('brush-size').value || 10);
+    
+    // Transform overlay offset is 512
+    const tx = pointerX + 512;
+    const ty = pointerY + 512;
+    
+    transformCtx.beginPath();
+    transformCtx.arc(tx, ty, size / 2, 0, Math.PI * 2);
+    transformCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    transformCtx.lineWidth = 1.5;
+    transformCtx.stroke();
+    
+    transformCtx.beginPath();
+    transformCtx.arc(tx, ty, size / 2, 0, Math.PI * 2);
+    transformCtx.strokeStyle = 'rgba(0, 0, 0, 0.4)';
+    transformCtx.lineWidth = 0.5;
+    transformCtx.stroke();
+}
+
+document.getElementById('brush-size')?.addEventListener('input', drawBrushCursor);
+document.getElementById('brush-size-mobile')?.addEventListener('input', drawBrushCursor);
+
+// ─── MOBILE EXPORT & SAVE MODAL ──────────────────────────────────────
+const mobileExportModal = document.getElementById('mobile-export-modal');
+const modalFilename = document.getElementById('modal-filename');
+const modalFormat = document.getElementById('modal-format');
+const modalFormatContainer = document.getElementById('modal-format-container');
+const modalActionTitle = document.getElementById('modal-action-title');
+
+const realExportFilename = document.getElementById('export-filename');
+const realExportFormat = document.getElementById('export-format');
+
+let activeModalAction = null; 
+let isModalBypassed = false;
+
+function openMobileActionModal(action) {
+    if (window.innerWidth > 768) return false;
+    
+    activeModalAction = action;
+    modalFilename.value = realExportFilename.value;
+    
+    if (action === 'export') {
+        modalActionTitle.innerText = 'Export Font';
+        modalFormatContainer.style.display = 'flex';
+        modalFormat.value = realExportFormat.value;
+    } else {
+        modalActionTitle.innerText = 'Save Project';
+        modalFormatContainer.style.display = 'none';
+    }
+    
+    mobileExportModal.classList.remove('hidden');
+    mobileExportModal.classList.add('flex');
+    return true; 
+}
+
+document.getElementById('btn-modal-cancel')?.addEventListener('click', () => {
+    mobileExportModal.classList.remove('flex');
+    mobileExportModal.classList.add('hidden');
+});
+
+document.getElementById('btn-modal-confirm')?.addEventListener('click', () => {
+    realExportFilename.value = modalFilename.value;
+    if (activeModalAction === 'export') {
+        realExportFormat.value = modalFormat.value;
+    }
+    
+    mobileExportModal.classList.remove('flex');
+    mobileExportModal.classList.add('hidden');
+    
+    isModalBypassed = true;
+    if (activeModalAction === 'export') {
+        document.getElementById('btn-export').click();
+    } else {
+        document.getElementById('btn-save-project').click();
+    }
+    isModalBypassed = false;
+});
+
+document.getElementById('btn-export')?.addEventListener('click', (e) => {
+    if (!isModalBypassed && openMobileActionModal('export')) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+    }
+}, true);
+
+document.getElementById('btn-save-project')?.addEventListener('click', (e) => {
+    if (!isModalBypassed && openMobileActionModal('save')) {
+        e.stopImmediatePropagation();
+        e.preventDefault();
+    }
+}, true);
