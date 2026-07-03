@@ -196,6 +196,7 @@ let cropStartMouse = null;
 let cropStartObj = null;
 
 function setTool(tool) {
+    const prevTool = currentTool;
     // If exiting transform mode, bake the transform
     if (currentTool === 'transform' && tool !== 'transform') {
         bakeTransformToCanvas();
@@ -207,9 +208,19 @@ function setTool(tool) {
     if (tool === 'crop') {
         if (!cropState) cropState = {x: 100, y: 100, w: 312, h: 312};
         if (applyBtn) applyBtn.hidden = false;
+        updateTransformOverlay(); // draw the crop box immediately, not just after first drag
     } else {
         cropState = null;
         if (applyBtn) applyBtn.hidden = true;
+    }
+
+    if (tool === 'transform') {
+        // This was never being called, which is why the bounding box / handles
+        // never appeared: tfState stayed null so there was nothing to draw or drag.
+        initTransformMode();
+    } else if (prevTool === 'transform' || prevTool === 'crop') {
+        // Clear the leftover overlay box/crop handles when leaving transform or crop
+        transformCtx.clearRect(0, 0, 1536, 1536);
     }
 
     // Update desktop toolbar active states
@@ -382,6 +393,8 @@ function selectChar(c) {
     document.querySelectorAll('.char-item').forEach(el => el.classList.remove('active'));
     document.getElementById('char-'+c.charCodeAt(0))?.classList.add('active');
     activeChar = c; document.getElementById('active-char-label').innerText = c;
+    const mobileLabel = document.getElementById('mobile-sticky-char-label');
+    if (mobileLabel) mobileLabel.innerText = c;
     const d = getCharData(c);
     document.getElementById('slider-bg').value = d.bgTolerance; document.getElementById('val-bg').innerText = d.bgTolerance;
     document.getElementById('slider-dither').value = d.ditherLevel; document.getElementById('val-dither').innerText = d.ditherLevel;
@@ -431,7 +444,7 @@ function applyFilters(imgD, bgTol, dith) {
 
 function updateDisplay() {
     // Don't overwrite canvas during kern preview
-    if (activeKernIndex >= 0) { updateLivePreview(); return; }
+    if (activeKernIndex >= 0) { updateLivePreview(); syncMobileGlyphThumb(); return; }
     
     if (currentTool === 'transform' && tfState) {
         // While in transform, we render the transformed snapshot on the main canvas
@@ -467,6 +480,18 @@ function updateDisplay() {
         updateCharThumbnail(activeChar, filterCvs);
     }
     updateLivePreview();
+    syncMobileGlyphThumb();
+}
+
+// Mirrors main-canvas into the small sticky thumbnail inside the mobile Settings
+// drawer, so users can see the glyph they're editing while the drawer is open
+// (drawer previously covered the whole canvas with no way to check progress).
+const mobileGlyphThumb = document.getElementById('mobile-glyph-thumb');
+const mobileGlyphThumbCtx = mobileGlyphThumb ? mobileGlyphThumb.getContext('2d') : null;
+function syncMobileGlyphThumb() {
+    if (!mobileGlyphThumbCtx) return;
+    mobileGlyphThumbCtx.clearRect(0, 0, 512, 512);
+    mobileGlyphThumbCtx.drawImage(mainCanvas, 0, 0);
 }
 
 let sliderTimer = null;
