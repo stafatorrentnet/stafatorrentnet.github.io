@@ -50,11 +50,13 @@ canvas {
 }
 
 /* Responsive Drawer for Mobile */
-#char-grid-container {
+#char-grid-container,
+#settings-sidebar {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 @media (max-width: 768px) {
-    #char-grid-container {
+    #char-grid-container,
+    #settings-sidebar {
         position: absolute;
         bottom: 0;
         left: 0;
@@ -64,9 +66,24 @@ canvas {
         background: #111;
         border-top: 1px solid #333;
         transform: translateY(100%);
+    }
+    #char-grid-container {
         border-right: none !important;
     }
-    #char-grid-container.open {
+    #settings-sidebar {
+        border-left: none !important;
+    }
+    #char-grid-container.open,
+    #settings-sidebar.open {
         transform: translateY(0);
     }
+}
+
+/* Utilities */
+.hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+    display: none;
 }

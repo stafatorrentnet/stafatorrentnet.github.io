@@ -39,12 +39,12 @@
       <button id="btn-toggle-drawer" class="md:hidden flex items-center justify-center p-2 bg-white/5 border border-white/10 rounded-md text-white hover:bg-white/10">
         <span class="material-symbols-outlined text-[20px]">menu</span>
       </button>
-      <h1 id="dynamic-title" class="text-xl md:text-2xl tracking-tighter cursor-pointer select-none" title="Ngefont">Ngefont!</h1>
+      <h1 id="dynamic-title" class="text-xl md:text-2xl tracking-tighter cursor-pointer select-none hidden sm:block" title="Ngefont">Ngefont!</h1>
     </div>
     <div class="flex items-center gap-2 md:gap-3">
-      <button class="px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2" id="btn-load-project"><span class="material-symbols-outlined text-[16px] hidden md:block">folder_open</span> <span class="hidden md:inline">Load Project</span><span class="md:hidden">Load</span></button>
+      <button class="px-2 md:px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2" id="btn-load-project"><span class="material-symbols-outlined text-[16px]">folder_open</span> <span class="hidden md:inline">Load Project</span></button>
       <input type="file" id="file-load-project" accept=".ngefont" hidden />
-      <button class="px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 md:mr-4" id="btn-save-project"><span class="material-symbols-outlined text-[16px] hidden md:block">save</span> <span class="hidden md:inline">Save Project</span><span class="md:hidden">Save</span></button>
+      <button class="px-2 md:px-3 py-2 bg-transparent border border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 md:mr-4" id="btn-save-project"><span class="material-symbols-outlined text-[16px]">save</span> <span class="hidden md:inline">Save Project</span></button>
       <div class="w-px h-6 bg-white/20 mr-1 md:mr-2 hidden md:block"></div>
       <input type="text" id="export-filename" value="Ngefont" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-3 py-2 outline-none w-32 focus:border-white/50" />
       <select id="export-format" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-2 py-2 outline-none focus:border-white/50">
@@ -53,7 +53,10 @@
         <option value="woff">.woff</option>
         <option value="woff2">.woff2</option>
       </select>
-      <button class="px-4 md:px-6 py-2 bg-white text-black text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors" id="btn-export">Export</button>
+      <button class="px-3 md:px-6 py-2 bg-white text-black text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-gray-200 transition-colors flex items-center gap-2" id="btn-export"><span class="material-symbols-outlined text-[16px] md:hidden">download</span> <span class="hidden md:inline">Export</span></button>
+      <button id="btn-toggle-settings" class="md:hidden flex items-center justify-center p-2 bg-white/5 border border-white/10 rounded-md text-white hover:bg-white/10">
+        <span class="material-symbols-outlined text-[20px]">settings</span>
+      </button>
     </div>
   </header>
 
@@ -78,30 +81,30 @@
     <!-- Main Workspace -->
     <main id="workspace" class="flex-1 bg-[#0a0a0a] flex flex-col relative overflow-hidden">
       <!-- Toolbar -->
-      <div class="absolute top-6 left-6 z-10 w-24">
-        <div class="grid grid-cols-2 gap-2 mb-3">
-          <button id="btn-draw"     class="w-10 h-10 bg-white border border-white flex items-center justify-center text-black hover:bg-gray-200 transition-colors" title="Draw"><span class="material-symbols-outlined opacity-80 text-[20px]">edit</span></button>
-          <button id="btn-eraser"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Eraser"><span class="material-symbols-outlined opacity-80 text-[20px]">ink_eraser</span></button>
-          <button id="btn-move"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Transform / Move"><span class="material-symbols-outlined opacity-80 text-[20px]">transform</span></button>
-          <button id="btn-clear"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Clear"><span class="material-symbols-outlined opacity-80 text-[20px]">delete</span></button>
-          <button id="btn-camera"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Camera"><span class="material-symbols-outlined opacity-80 text-[20px]">photo_camera</span></button>
-          <button id="btn-upload"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Upload Image"><span class="material-symbols-outlined opacity-80 text-[20px]">folder_open</span></button>
+      <div class="absolute top-2 left-2 right-2 md:top-6 md:left-6 md:right-auto z-10 md:w-24 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+        <div class="flex md:grid md:grid-cols-2 gap-2 mb-0 md:mb-3 w-max md:w-auto">
+          <button id="btn-draw"     class="shrink-0 w-10 h-10 bg-white border border-white flex items-center justify-center text-black hover:bg-gray-200 transition-colors" title="Draw"><span class="material-symbols-outlined opacity-80 text-[20px]">edit</span></button>
+          <button id="btn-eraser"   class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Eraser"><span class="material-symbols-outlined opacity-80 text-[20px]">ink_eraser</span></button>
+          <button id="btn-move"     class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Transform / Move"><span class="material-symbols-outlined opacity-80 text-[20px]">transform</span></button>
+          <button id="btn-clear"    class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Clear"><span class="material-symbols-outlined opacity-80 text-[20px]">delete</span></button>
+          <button id="btn-camera"   class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Camera"><span class="material-symbols-outlined opacity-80 text-[20px]">photo_camera</span></button>
+          <button id="btn-upload"   class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Upload Image"><span class="material-symbols-outlined opacity-80 text-[20px]">folder_open</span></button>
           <input type="file" id="file-upload" accept="image/*" hidden />
-          <button id="btn-undo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Undo (Cmd/Ctrl + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">undo</span></button>
-          <button id="btn-redo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Redo (Cmd/Ctrl + Shift + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">redo</span></button>
-          <button id="btn-ai-bg"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="AI Background Removal"><span class="material-symbols-outlined opacity-80 text-[20px]">magic_button</span></button>
-          <button id="btn-autocrop" class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Crop"><span class="material-symbols-outlined opacity-80 text-[20px]">crop</span></button>
+          <button id="btn-undo"     class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Undo (Cmd/Ctrl + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">undo</span></button>
+          <button id="btn-redo"     class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Redo (Cmd/Ctrl + Shift + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">redo</span></button>
+          <button id="btn-ai-bg"    class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="AI Background Removal"><span class="material-symbols-outlined opacity-80 text-[20px]">magic_button</span></button>
+          <button id="btn-autocrop" class="shrink-0 w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Crop"><span class="material-symbols-outlined opacity-80 text-[20px]">crop</span></button>
         </div>
         
         <!-- Brush Size -->
-        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center" id="brush-size-container">
+        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center hidden md:block" id="brush-size-container">
           <label class="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Brush Size <span id="brush-size-val" class="text-white">15</span></label>
           <input type="range" id="brush-size" min="1" max="100" value="15" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
         </div>
       </div>
 
       <!-- Canvas area -->
-      <div class="flex-1 flex flex-col items-center justify-center p-12">
+      <div class="flex-1 flex flex-col items-center justify-center pt-16 pb-4 px-4 md:p-12">
         <div class="text-center mb-6">
           <span class="text-[10px] text-gray-500 uppercase tracking-widest">Editing Glyph <span id="active-char-label" class="text-white font-bold text-lg ml-2">A</span></span>
         </div>
@@ -146,7 +149,7 @@
     </main>
 
     <!-- Right Sidebar -->
-    <aside class="w-[320px] border-l border-white/10 bg-[#111111] flex flex-col">
+    <aside id="settings-sidebar" class="w-full md:w-[320px] border-l border-white/10 bg-[#111111] flex flex-col absolute md:relative z-30 h-full right-0">
       <div class="p-6 space-y-8 flex-1 overflow-y-auto">
         <section>
           <h3 class="text-[10px] uppercase tracking-widest text-white mb-6 border-b border-white/10 pb-2">Image Filters</h3>

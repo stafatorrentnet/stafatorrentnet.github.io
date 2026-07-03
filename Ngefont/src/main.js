@@ -71,11 +71,25 @@ charsList.forEach(c => {
 
 // ─── Mobile Drawer Logic ──────────────────────────────────────────────────────
 const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
+const btnToggleSettings = document.getElementById('btn-toggle-settings');
 const charGridContainer = document.getElementById('char-grid-container');
+const settingsSidebar = document.getElementById('settings-sidebar');
 
 if (btnToggleDrawer && charGridContainer) {
     btnToggleDrawer.addEventListener('click', () => {
         charGridContainer.classList.toggle('open');
+        if (settingsSidebar && charGridContainer.classList.contains('open')) {
+            settingsSidebar.classList.remove('open');
+        }
+    });
+}
+
+if (btnToggleSettings && settingsSidebar) {
+    btnToggleSettings.addEventListener('click', () => {
+        settingsSidebar.classList.toggle('open');
+        if (charGridContainer && settingsSidebar.classList.contains('open')) {
+            charGridContainer.classList.remove('open');
+        }
     });
 }
 
