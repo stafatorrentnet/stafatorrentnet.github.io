@@ -792,15 +792,52 @@ document.getElementById('btn-clear').onclick = () => {
     getCharData(activeChar).sourceCanvas.getContext('2d').fillRect(0,0,512,512);
     updateDisplay(); saveState();
 };
+// Auto-contrast: stretches the grayscale histogram of the just-drawn image so its
+// darkest pixel becomes pure black and its lightest becomes pure white. Uploaded
+// photos are rarely full-contrast, and the vectorizer/threshold-removal downstream
+// works far better once blacks and whites are pushed to their extremes.
+function autoContrastCanvas(ctx, w, h) {
+    const imgD = ctx.getImageData(0, 0, w, h);
+    const d = imgD.data;
+    let min = 255, max = 0;
+    for (let i = 0; i < d.length; i += 4) {
+        const v = 0.299*d[i] + 0.587*d[i+1] + 0.114*d[i+2];
+        if (v < min) min = v;
+        if (v > max) max = v;
+    }
+    const range = max - min;
+    if (range < 8) return; // already flat/blank — stretching would just amplify noise
+    const scale = 255 / range;
+    for (let i = 0; i < d.length; i += 4) {
+        d[i]   = Math.max(0, Math.min(255, (d[i]   - min) * scale));
+        d[i+1] = Math.max(0, Math.min(255, (d[i+1] - min) * scale));
+        d[i+2] = Math.max(0, Math.min(255, (d[i+2] - min) * scale));
+    }
+    ctx.putImageData(imgD, 0, 0);
+}
+
+// Shared by the desktop upload button and the mobile "More > Upload" button
+// (mobile just re-triggers this same input, see the delegation block above),
+// so auto-contrast + auto-dither apply identically on both.
 document.getElementById('btn-upload').onclick = () => document.getElementById('file-upload').click();
 document.getElementById('file-upload').onchange = e => {
     const f=e.target.files[0]; if(!f) return;
     if (currentTool === 'transform') setTool('draw');
     const u=URL.createObjectURL(f), img=new Image();
     img.onload = () => {
-        const ctx=getCharData(activeChar).sourceCanvas.getContext('2d'); ctx.fillStyle='white'; ctx.fillRect(0,0,512,512);
+        const data = getCharData(activeChar);
+        const ctx = data.sourceCanvas.getContext('2d'); ctx.fillStyle='white'; ctx.fillRect(0,0,512,512);
         const s=Math.min(512/img.width,512/img.height);
         ctx.drawImage(img,(512-img.width*s)/2,(512-img.height*s)/2,img.width*s,img.height*s);
+
+        // Auto contrast + auto dither on every fresh upload, so a photo/scan is
+        // usable right away without the user having to hunt through Filters first.
+        autoContrastCanvas(ctx, 512, 512);
+        data.ditherLevel = 45;
+        const sliderDither = document.getElementById('slider-dither'), valDither = document.getElementById('val-dither');
+        if (sliderDither) sliderDither.value = data.ditherLevel;
+        if (valDither) valDither.innerText = data.ditherLevel;
+
         URL.revokeObjectURL(u); e.target.value=''; updateDisplay(); saveState();
     }; img.src=u;
 };
@@ -863,6 +900,13 @@ function enterKernEditMode(index) {
     // Render the kern preview on the main canvas
     renderKernPreview();
     renderKerningGroups();
+    // Mirror it into the mobile sticky preview thumb too, and relabel it so
+    // it's clear the thumbnail is now showing a kern pair, not a single glyph.
+    syncMobileGlyphThumb();
+    const labelTag = document.getElementById('mobile-sticky-label-tag');
+    const charLabel = document.getElementById('mobile-sticky-char-label');
+    if (labelTag) labelTag.innerText = 'Editing Kern';
+    if (charLabel) charLabel.innerText = kg.left + ' ↔ ' + kg.right;
 }
 
 function exitKernEditMode() {
@@ -873,6 +917,10 @@ function exitKernEditMode() {
     // Restore the glyph editor view
     updateDisplay();
     renderKerningGroups();
+    const labelTag = document.getElementById('mobile-sticky-label-tag');
+    if (labelTag) labelTag.innerText = 'Editing';
+    const charLabel = document.getElementById('mobile-sticky-char-label');
+    if (charLabel) charLabel.innerText = activeChar;
 }
 
 function renderKernPreview() {
@@ -1041,6 +1089,7 @@ document.getElementById('kern-val-up').onclick = () => {
     kerningGroups[activeKernIndex].value = parseFloat(input.value);
     renderKernPreview();
     updateLivePreview();
+    syncMobileGlyphThumb();
 };
 document.getElementById('kern-val-down').onclick = () => {
     if (activeKernIndex < 0) return;
@@ -1049,6 +1098,7 @@ document.getElementById('kern-val-down').onclick = () => {
     kerningGroups[activeKernIndex].value = parseFloat(input.value);
     renderKernPreview();
     updateLivePreview();
+    syncMobileGlyphThumb();
 };
 
 // Live update when typing in the edit inputs
@@ -1058,6 +1108,7 @@ document.getElementById('kern-value').addEventListener('input', (e) => {
     renderKernPreview();
     renderKerningGroups();
     updateLivePreview();
+    syncMobileGlyphThumb();
 });
 document.getElementById('kern-left').addEventListener('input', (e) => {
     if (activeKernIndex < 0) return;
@@ -1065,6 +1116,9 @@ document.getElementById('kern-left').addEventListener('input', (e) => {
     renderKernPreview();
     renderKerningGroups();
     updateLivePreview();
+    syncMobileGlyphThumb();
+    const charLabel = document.getElementById('mobile-sticky-char-label');
+    if (charLabel) charLabel.innerText = kerningGroups[activeKernIndex].left + ' ↔ ' + kerningGroups[activeKernIndex].right;
 });
 document.getElementById('kern-right').addEventListener('input', (e) => {
     if (activeKernIndex < 0) return;
@@ -1072,6 +1126,9 @@ document.getElementById('kern-right').addEventListener('input', (e) => {
     renderKernPreview();
     renderKerningGroups();
     updateLivePreview();
+    syncMobileGlyphThumb();
+    const charLabel = document.getElementById('mobile-sticky-char-label');
+    if (charLabel) charLabel.innerText = kerningGroups[activeKernIndex].left + ' ↔ ' + kerningGroups[activeKernIndex].right;
 });
 
 // ─── Fast Raster Live Preview ───────────────────────────────────────────────
@@ -1103,10 +1160,10 @@ function updateLivePreview() {
             const tempC = document.createElement('canvas'); tempC.width=512; tempC.height=512;
             tempC.getContext('2d').putImageData(data.processedImageData,0,0);
             
-            // To make the background completely transparent in the preview instead of white/black:
-            // The processedImageData already drops alpha where appropriate. But wait, applyFilters sets white to alpha=0.
-            // So it IS transparent! Let's display it.
-            tempC.className = "inline-block h-[1.5em] w-auto object-contain filter invert";
+            // The processedImageData already drops alpha where the background was removed,
+            // leaving solid black ink for the glyph shape. With the white preview backdrop,
+            // that reads directly as black-on-white — no invert filter needed anymore.
+            tempC.className = "inline-block h-[1.5em] w-auto object-contain";
             tempC.style.verticalAlign = "baseline"; // Needs manual CSS fine-tuning
             
             if(kv!==0) tempC.style.marginRight = (kv*100)+'%';
@@ -1114,7 +1171,7 @@ function updateLivePreview() {
             previewRender.appendChild(tempC);
         } else {
             const sp = document.createElement('span'); sp.style.display='inline-block'; sp.textContent = c;
-            sp.className = "text-white text-[1.5em] font-mono leading-none";
+            sp.className = "text-black text-[1.5em] font-mono leading-none";
             if(kv!==0) sp.style.marginRight = kv+'em';
             previewRender.appendChild(sp);
         }

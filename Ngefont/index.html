@@ -155,8 +155,8 @@
           <span class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest hidden md:block">Type Testing / Live Rendering</span>
           <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors w-full md:w-48" />
         </div>
-        <!-- Raster Live Preview wrapper -->
-        <div id="preview-render" class="flex-1 whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline gap-[2px]"></div>
+        <!-- Raster Live Preview wrapper: white backdrop + black glyphs, like paper/ink -->
+        <div id="preview-render" class="flex-1 whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline gap-[2px] bg-white rounded-md px-3"></div>
       </div>
     </main>
 
@@ -175,11 +175,11 @@
              what they were editing while the drawer covered the canvas. -->
         <div id="mobile-sticky-preview" class="md:hidden sticky top-0 -mx-4 md:-mx-6 -mt-4 md:-mt-6 px-4 md:px-6 pt-4 md:pt-6 pb-3 bg-[#111111]/95 backdrop-blur border-b border-white/10 z-10 space-y-2">
           <div class="flex items-center gap-3">
-            <div class="shrink-0 w-14 h-14 border border-white/15 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] bg-[size:10px_10px] relative overflow-hidden">
+            <div class="shrink-0 w-24 h-24 border border-white/15 bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] bg-[size:10px_10px] relative overflow-hidden rounded-md">
               <canvas id="mobile-glyph-thumb" width="512" height="512" class="w-full h-full"></canvas>
             </div>
             <div class="min-w-0">
-              <span class="text-[9px] text-gray-500 uppercase tracking-widest block">Editing</span>
+              <span id="mobile-sticky-label-tag" class="text-[9px] text-gray-500 uppercase tracking-widest block">Editing</span>
               <span id="mobile-sticky-char-label" class="text-white font-bold text-lg">A</span>
             </div>
           </div>
