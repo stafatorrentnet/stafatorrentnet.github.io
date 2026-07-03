@@ -74,23 +74,44 @@ const btnToggleDrawer = document.getElementById('btn-toggle-drawer');
 const btnToggleSettings = document.getElementById('btn-toggle-settings');
 const charGridContainer = document.getElementById('char-grid-container');
 const settingsSidebar = document.getElementById('settings-sidebar');
+const drawerBackdrop = document.getElementById('drawer-backdrop');
+
+function closeAllDrawers() {
+    charGridContainer?.classList.remove('open');
+    settingsSidebar?.classList.remove('open');
+    drawerBackdrop?.classList.add('hidden');
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+}
+
+function openDrawer(drawer) {
+    closeAllDrawers();
+    drawer?.classList.add('open');
+    drawerBackdrop?.classList.remove('hidden');
+}
 
 if (btnToggleDrawer && charGridContainer) {
     btnToggleDrawer.addEventListener('click', () => {
-        charGridContainer.classList.toggle('open');
-        if (settingsSidebar && charGridContainer.classList.contains('open')) {
-            settingsSidebar.classList.remove('open');
+        if (charGridContainer.classList.contains('open')) {
+            closeAllDrawers();
+        } else {
+            openDrawer(charGridContainer);
         }
     });
 }
 
 if (btnToggleSettings && settingsSidebar) {
     btnToggleSettings.addEventListener('click', () => {
-        settingsSidebar.classList.toggle('open');
-        if (charGridContainer && settingsSidebar.classList.contains('open')) {
-            charGridContainer.classList.remove('open');
+        if (settingsSidebar.classList.contains('open')) {
+            closeAllDrawers();
+        } else {
+            openDrawer(settingsSidebar);
         }
     });
+}
+
+// Backdrop click closes all drawers
+if (drawerBackdrop) {
+    drawerBackdrop.addEventListener('click', closeAllDrawers);
 }
 
 // ─── Tool Setup & Touch ─────────────────────────────────────────────────────
@@ -117,6 +138,7 @@ function setTool(tool) {
         if (applyBtn) applyBtn.hidden = true;
     }
 
+    // Update desktop toolbar active states
     ['btn-draw','btn-eraser','btn-move','btn-autocrop'].forEach(id => {
         const btn = document.getElementById(id);
         if (!btn) return;
@@ -128,6 +150,18 @@ function setTool(tool) {
         btn.classList.toggle('text-white', !active);
         btn.classList.toggle('border-white/10', !active);
     });
+
+    // Update mobile toolbar active states
+    const mobileToolMap = {
+        'draw': 'm-btn-draw',
+        'erase': 'm-btn-eraser',
+        'transform': 'm-btn-move'
+    };
+    document.querySelectorAll('.mobile-tool-btn').forEach(btn => btn.classList.remove('active'));
+    const mobileActiveId = mobileToolMap[tool];
+    if (mobileActiveId) {
+        document.getElementById(mobileActiveId)?.classList.add('active');
+    }
     
     if (tool !== 'transform' && tool !== 'crop') {
         transformCtx.clearRect(0,0,1536,1536);
@@ -142,18 +176,67 @@ function setTool(tool) {
     }
 }
 
-// Brush Size UI Logic
+// Brush Size UI Logic — sync desktop & mobile
 const brushSizeInput = document.getElementById('brush-size');
 const brushSizeVal = document.getElementById('brush-size-val');
-if (brushSizeInput && brushSizeVal) {
-    brushSizeInput.addEventListener('input', (e) => {
-        brushSizeVal.textContent = e.target.value;
-    });
+const brushSizeMobile = document.getElementById('brush-size-mobile');
+const brushSizeValMobile = document.getElementById('brush-size-val-mobile');
+
+function syncBrushSize(val) {
+    if (brushSizeInput) brushSizeInput.value = val;
+    if (brushSizeVal) brushSizeVal.textContent = val;
+    if (brushSizeMobile) brushSizeMobile.value = val;
+    if (brushSizeValMobile) brushSizeValMobile.textContent = val;
+}
+if (brushSizeInput) {
+    brushSizeInput.addEventListener('input', (e) => syncBrushSize(e.target.value));
+}
+if (brushSizeMobile) {
+    brushSizeMobile.addEventListener('input', (e) => syncBrushSize(e.target.value));
 }
 
+// Desktop toolbar buttons
 document.getElementById('btn-draw').onclick   = () => setTool('draw');
 document.getElementById('btn-eraser').onclick = () => setTool('erase');
 document.getElementById('btn-move').onclick   = () => setTool('transform');
+
+// ─── Mobile Bottom Toolbar ──────────────────────────────────────────────────
+document.getElementById('m-btn-draw')?.addEventListener('click', () => setTool('draw'));
+document.getElementById('m-btn-eraser')?.addEventListener('click', () => setTool('erase'));
+document.getElementById('m-btn-move')?.addEventListener('click', () => setTool('transform'));
+document.getElementById('m-btn-undo')?.addEventListener('click', () => undo());
+document.getElementById('m-btn-redo')?.addEventListener('click', () => redo());
+
+// More tools panel
+document.getElementById('m-btn-more')?.addEventListener('click', () => {
+    const panel = document.getElementById('mobile-more-panel');
+    if (panel) panel.classList.toggle('hidden');
+});
+
+// More panel tool buttons → delegate to desktop button handlers
+document.getElementById('m-btn-clear')?.addEventListener('click', () => {
+    document.getElementById('btn-clear')?.click();
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+});
+document.getElementById('m-btn-camera')?.addEventListener('click', () => {
+    document.getElementById('btn-camera')?.click();
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+});
+document.getElementById('m-btn-upload')?.addEventListener('click', () => {
+    document.getElementById('btn-upload')?.click();
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+});
+document.getElementById('m-btn-ai-bg')?.addEventListener('click', () => {
+    document.getElementById('btn-ai-bg')?.click();
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+});
+document.getElementById('m-btn-autocrop')?.addEventListener('click', () => {
+    document.getElementById('btn-autocrop')?.click();
+    document.getElementById('mobile-more-panel')?.classList.add('hidden');
+});
+
+
+
 
 // ─── History ────────────────────────────────────────────────────────────────
 function saveState() {
@@ -305,6 +388,8 @@ function selectChar(c) {
     document.getElementById('slider-bg').value = d.bgTolerance; document.getElementById('val-bg').innerText = d.bgTolerance;
     document.getElementById('slider-dither').value = d.ditherLevel; document.getElementById('val-dither').innerText = d.ditherLevel;
     updateDisplay(); updatePopulatedStats();
+    // Close drawer on mobile after selecting a glyph
+    if (window.innerWidth < 768) closeAllDrawers();
 }
 
 const thumbCtx = document.createElement('canvas').getContext('2d', {willReadFrequently:true});

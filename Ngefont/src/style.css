@@ -49,37 +49,139 @@ canvas {
     background: rgba(255,255,255,0.4);
 }
 
-/* Responsive Drawer for Mobile */
-#char-grid-container,
-#settings-sidebar {
+/* ─── Mobile Bottom Toolbar ─────────────────────────────────────────── */
+.mobile-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+    background: #121212;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding: 4px 0;
+    padding-bottom: env(safe-area-inset-bottom, 4px);
+    z-index: 40;
+}
+
+.mobile-tool-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    color: rgba(255,255,255,0.5);
+    border-radius: 8px;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+    min-width: 48px;
+}
+.mobile-tool-btn.active {
+    color: #fff;
+    background: rgba(255,255,255,0.1);
+}
+.mobile-tool-btn:active {
+    transform: scale(0.92);
+}
+
+/* ─── Mobile More Panel ─────────────────────────────────────────────── */
+.mobile-more-panel {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #1a1a1a;
+    border-top: 1px solid rgba(255,255,255,0.15);
+    border-radius: 16px 16px 0 0;
+    z-index: 60;
+    padding-bottom: env(safe-area-inset-bottom, 8px);
+    animation: slideUp 0.25s ease-out;
+}
+.mobile-more-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 8px;
+    border: none;
+    background: rgba(255,255,255,0.05);
+    color: rgba(255,255,255,0.7);
+    border-radius: 12px;
+    transition: all 0.15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.mobile-more-item:active {
+    background: rgba(255,255,255,0.15);
+    transform: scale(0.95);
+}
+
+/* ─── Mobile Header Icon Buttons ────────────────────────────────────── */
+@media (max-width: 768px) {
+    .mobile-icon-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        background: rgba(255,255,255,0.05);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .mobile-icon-btn:active {
+        background: rgba(255,255,255,0.2);
+    }
+}
+
+/* ─── Sidebar Drawers for Mobile ────────────────────────────────────── */
+.sidebar-drawer {
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
+
 @media (max-width: 768px) {
-    #char-grid-container,
-    #settings-sidebar {
-        position: absolute;
+    .sidebar-drawer {
+        position: fixed;
         bottom: 0;
         left: 0;
         width: 100%;
-        height: 50vh;
-        z-index: 50;
+        max-height: 65vh;
+        min-height: 40vh;
+        z-index: 55;
         background: #111;
-        border-top: 1px solid #333;
+        border-top: 1px solid rgba(255,255,255,0.15);
+        border-radius: 16px 16px 0 0;
         transform: translateY(100%);
+        box-shadow: 0 -8px 30px rgba(0,0,0,0.6);
     }
-    #char-grid-container {
-        border-right: none !important;
-    }
-    #settings-sidebar {
-        border-left: none !important;
-    }
-    #char-grid-container.open,
-    #settings-sidebar.open {
+    .sidebar-drawer.open {
         transform: translateY(0);
     }
 }
 
-/* Utilities */
+/* ─── Drawer Backdrop ───────────────────────────────────────────────── */
+.drawer-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 54;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* ─── Canvas wrapper mobile sizing ──────────────────────────────────── */
+@media (max-width: 768px) {
+    .canvas-wrapper {
+        max-width: calc(100vw - 16px) !important;
+        max-height: calc(100vh - 180px) !important;
+    }
+}
+
+/* ─── Animations ────────────────────────────────────────────────────── */
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+/* ─── Utilities ─────────────────────────────────────────────────────── */
 .hide-scrollbar {
     -ms-overflow-style: none;
     scrollbar-width: none;
