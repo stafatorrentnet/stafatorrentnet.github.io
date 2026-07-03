@@ -114,6 +114,80 @@ if (drawerBackdrop) {
     drawerBackdrop.addEventListener('click', closeAllDrawers);
 }
 
+// ─── Mobile Bottom Toolbar & More Panel ────────────────────────────────────
+const mobileMorePanel = document.getElementById('mobile-more-panel');
+const btnMore = document.getElementById('btn-more');
+
+if (btnMore && mobileMorePanel) {
+    btnMore.addEventListener('click', () => {
+        const wasHidden = mobileMorePanel.classList.contains('hidden');
+        closeAllDrawers();
+        if (wasHidden) {
+            mobileMorePanel.classList.remove('hidden');
+            drawerBackdrop?.classList.remove('hidden');
+        }
+    });
+}
+document.getElementById('btn-close-more')?.addEventListener('click', closeAllDrawers);
+
+// Draw / Erase / Move / Undo / Redo — mobile bottom bar mirrors the desktop toolbar.
+// setTool(), undo() and redo() are function declarations defined later in this file,
+// but hoisted, so they're safe to reference here.
+document.getElementById('btn-draw-mobile')?.addEventListener('click', () => setTool('draw'));
+document.getElementById('btn-eraser-mobile')?.addEventListener('click', () => setTool('erase'));
+document.getElementById('btn-move-mobile')?.addEventListener('click', () => setTool('transform'));
+document.getElementById('btn-undo-mobile')?.addEventListener('click', () => undo());
+document.getElementById('btn-redo-mobile')?.addEventListener('click', () => redo());
+
+// "More" panel buttons delegate to their desktop equivalents so there's a single
+// source of truth for clear/camera/upload/AI-bg/crop behavior.
+[
+    ['btn-clear-mobile', 'btn-clear'],
+    ['btn-camera-mobile', 'btn-camera'],
+    ['btn-upload-mobile', 'btn-upload'],
+    ['btn-ai-bg-mobile', 'btn-ai-bg'],
+    ['btn-autocrop-mobile', 'btn-autocrop'],
+].forEach(([mobileId, desktopId]) => {
+    document.getElementById(mobileId)?.addEventListener('click', () => {
+        document.getElementById(desktopId)?.click();
+        closeAllDrawers();
+    });
+});
+
+// ─── Brush Size Sync (desktop slider <-> mobile Settings-drawer slider) ────
+const brushSizeDesktop = document.getElementById('brush-size');
+const brushSizeMobile = document.getElementById('brush-size-mobile');
+const brushValDesktop = document.getElementById('brush-size-val');
+const brushValMobile = document.getElementById('brush-size-val-mobile');
+
+function syncBrushSize(value) {
+    if (brushSizeDesktop) brushSizeDesktop.value = value;
+    if (brushSizeMobile) brushSizeMobile.value = value;
+    if (brushValDesktop) brushValDesktop.innerText = value;
+    if (brushValMobile) brushValMobile.innerText = value;
+}
+brushSizeDesktop?.addEventListener('input', e => syncBrushSize(e.target.value));
+brushSizeMobile?.addEventListener('input', e => syncBrushSize(e.target.value));
+
+// ─── Live Preview relocation (main workspace on desktop, Settings drawer on mobile) ──
+const livePreviewBlock = document.getElementById('live-preview-block');
+const livePreviewAnchor = document.getElementById('live-preview-anchor');
+const livePreviewMobileSlot = document.getElementById('live-preview-mobile-slot');
+const mobileBreakpointMQ = window.matchMedia('(max-width: 767px)');
+
+function placeLivePreview(isMobile) {
+    if (!livePreviewBlock) return;
+    if (isMobile && livePreviewMobileSlot) {
+        livePreviewMobileSlot.appendChild(livePreviewBlock);
+        livePreviewBlock.classList.add('mobile-in-drawer');
+    } else if (livePreviewAnchor) {
+        livePreviewAnchor.parentNode.insertBefore(livePreviewBlock, livePreviewAnchor.nextSibling);
+        livePreviewBlock.classList.remove('mobile-in-drawer');
+    }
+}
+placeLivePreview(mobileBreakpointMQ.matches);
+mobileBreakpointMQ.addEventListener('change', e => placeLivePreview(e.matches));
+
 // ─── Tool Setup & Touch ─────────────────────────────────────────────────────
 let currentTool = 'draw';
 let cropState = null;
@@ -151,92 +225,16 @@ function setTool(tool) {
         btn.classList.toggle('border-white/10', !active);
     });
 
-    // Update mobile toolbar active states
-    const mobileToolMap = {
-        'draw': 'm-btn-draw',
-        'erase': 'm-btn-eraser',
-        'transform': 'm-btn-move'
-    };
-    document.querySelectorAll('.mobile-tool-btn').forEach(btn => btn.classList.remove('active'));
-    const mobileActiveId = mobileToolMap[tool];
-    if (mobileActiveId) {
-        document.getElementById(mobileActiveId)?.classList.add('active');
-    }
-    
-    if (tool !== 'transform' && tool !== 'crop') {
-        transformCtx.clearRect(0,0,1536,1536);
-        const ws = document.getElementById('workspace');
-        if (ws) ws.style.cursor = tool==='erase' ? 'cell' : 'crosshair';
-        mainCanvas.style.cursor = tool==='erase' ? 'cell' : 'crosshair';
-        updateDisplay();
-    } else if (tool === 'transform') {
-        initTransformMode();
-    } else if (tool === 'crop') {
-        updateTransformOverlay();
-    }
-}
-
-// Brush Size UI Logic — sync desktop & mobile
-const brushSizeInput = document.getElementById('brush-size');
-const brushSizeVal = document.getElementById('brush-size-val');
-const brushSizeMobile = document.getElementById('brush-size-mobile');
-const brushSizeValMobile = document.getElementById('brush-size-val-mobile');
-
-function syncBrushSize(val) {
-    if (brushSizeInput) brushSizeInput.value = val;
-    if (brushSizeVal) brushSizeVal.textContent = val;
-    if (brushSizeMobile) brushSizeMobile.value = val;
-    if (brushSizeValMobile) brushSizeValMobile.textContent = val;
-}
-if (brushSizeInput) {
-    brushSizeInput.addEventListener('input', (e) => syncBrushSize(e.target.value));
-}
-if (brushSizeMobile) {
-    brushSizeMobile.addEventListener('input', (e) => syncBrushSize(e.target.value));
+    // Update mobile bottom toolbar active states
+    [['btn-draw-mobile','draw'],['btn-eraser-mobile','erase'],['btn-move-mobile','transform']].forEach(([id, matchTool]) => {
+        document.getElementById(id)?.classList.toggle('active', tool === matchTool);
+    });
 }
 
 // Desktop toolbar buttons
 document.getElementById('btn-draw').onclick   = () => setTool('draw');
 document.getElementById('btn-eraser').onclick = () => setTool('erase');
 document.getElementById('btn-move').onclick   = () => setTool('transform');
-
-// ─── Mobile Bottom Toolbar ──────────────────────────────────────────────────
-document.getElementById('m-btn-draw')?.addEventListener('click', () => setTool('draw'));
-document.getElementById('m-btn-eraser')?.addEventListener('click', () => setTool('erase'));
-document.getElementById('m-btn-move')?.addEventListener('click', () => setTool('transform'));
-document.getElementById('m-btn-undo')?.addEventListener('click', () => undo());
-document.getElementById('m-btn-redo')?.addEventListener('click', () => redo());
-
-// More tools panel
-document.getElementById('m-btn-more')?.addEventListener('click', () => {
-    const panel = document.getElementById('mobile-more-panel');
-    if (panel) panel.classList.toggle('hidden');
-});
-
-// More panel tool buttons → delegate to desktop button handlers
-document.getElementById('m-btn-clear')?.addEventListener('click', () => {
-    document.getElementById('btn-clear')?.click();
-    document.getElementById('mobile-more-panel')?.classList.add('hidden');
-});
-document.getElementById('m-btn-camera')?.addEventListener('click', () => {
-    document.getElementById('btn-camera')?.click();
-    document.getElementById('mobile-more-panel')?.classList.add('hidden');
-});
-document.getElementById('m-btn-upload')?.addEventListener('click', () => {
-    document.getElementById('btn-upload')?.click();
-    document.getElementById('mobile-more-panel')?.classList.add('hidden');
-});
-document.getElementById('m-btn-ai-bg')?.addEventListener('click', () => {
-    document.getElementById('btn-ai-bg')?.click();
-    document.getElementById('mobile-more-panel')?.classList.add('hidden');
-});
-document.getElementById('m-btn-autocrop')?.addEventListener('click', () => {
-    document.getElementById('btn-autocrop')?.click();
-    document.getElementById('mobile-more-panel')?.classList.add('hidden');
-});
-
-
-
 
 // ─── History ────────────────────────────────────────────────────────────────
 function saveState() {

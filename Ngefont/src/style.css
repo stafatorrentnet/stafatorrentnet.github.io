@@ -1,17 +1,67 @@
 @import "tailwindcss";
 
+html {
+    height: 100%;
+}
 body { 
     margin: 0; 
     height: 100vh; 
+    height: 100dvh; /* dynamic viewport height: accounts for iOS/Android browser chrome */
     display: flex; 
     flex-direction: column; 
     overflow: hidden; 
     overscroll-behavior: none; /* prevent pull-to-refresh on mobile */
     background: #000;
     color: #fff;
+    -webkit-tap-highlight-color: transparent;
 }
 canvas { 
     touch-action: none; 
+    -webkit-user-select: none;
+    -webkit-touch-callout: none; /* prevent iOS long-press save/context menu over the drawing canvas */
+    user-select: none;
+}
+button {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    user-select: none;
+    touch-action: manipulation; /* avoid double-tap-to-zoom delay on buttons */
+}
+
+/* Cross-browser range slider thumbs sized for touch */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+    touch-action: manipulation;
+}
+input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    margin-top: -8px;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
+}
+input[type="range"]::-moz-range-track {
+    height: 4px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 4px;
+}
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border: none;
+    border-radius: 50%;
+    background: #fff;
+    cursor: pointer;
 }
 .char-thumb { 
     position: absolute; 
@@ -50,6 +100,9 @@ canvas {
 }
 
 /* ─── Mobile Bottom Toolbar ─────────────────────────────────────────── */
+.mobile-bottom-bar {
+    display: none; /* hidden by default (desktop); shown below <768px */
+}
 @media (max-width: 767px) {
     .mobile-bottom-bar {
         display: flex;
@@ -60,6 +113,7 @@ canvas {
         padding: 4px 0;
         padding-bottom: env(safe-area-inset-bottom, 4px);
         z-index: 40;
+        flex-shrink: 0;
     }
 
     .mobile-tool-btn {
@@ -173,8 +227,22 @@ canvas {
 @media (max-width: 768px) {
     .canvas-wrapper {
         max-width: calc(100vw - 16px) !important;
-        max-height: calc(100vh - 180px) !important;
+        /* Budget: header (~48px) + glyph label + guides toggle row + paddings
+           + mobile bottom toolbar (~56px) + safe-area inset */
+        max-height: calc(100vh - 210px) !important;
+        max-height: calc(100dvh - 210px) !important;
     }
+}
+
+/* ─── Live Preview relocated into the mobile Settings drawer ───────────── */
+.mobile-in-drawer {
+    height: auto !important;
+    border-top: none !important;
+    padding: 0 !important;
+    background: transparent !important;
+}
+.mobile-in-drawer #preview-render {
+    min-height: 64px;
 }
 
 /* ─── Animations ────────────────────────────────────────────────────── */

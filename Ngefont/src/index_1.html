@@ -2,7 +2,7 @@
 <html lang="en" style="height: 100%; margin: 0;">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Ngefont!</title>
     <meta name="description" content="Create fonts directly in your browser. 100% offline, lightweight, and works on mobile.">
     <link rel="manifest" href="./manifest.json">
@@ -93,24 +93,24 @@
     <!-- Main Workspace -->
     <main id="workspace" class="flex-1 bg-[#0a0a0a] flex flex-col relative overflow-hidden">
       
-      <!-- Desktop Toolbar (hidden on mobile) -->
-      <div class="hidden md:block absolute top-6 left-6 z-10 w-24">
-        <div class="grid grid-cols-2 gap-2 mb-3">
+      <!-- Toolbar (Desktop only — mobile uses the bottom toolbar + More panel) -->
+      <div class="hidden md:flex md:absolute md:top-6 md:left-6 z-20 md:w-24 md:flex-col gap-2">
+        <div class="grid grid-cols-2 gap-2 justify-items-center">
           <button id="btn-draw"     class="w-10 h-10 bg-white border border-white flex items-center justify-center text-black hover:bg-gray-200 transition-colors" title="Draw"><span class="material-symbols-outlined opacity-80 text-[20px]">edit</span></button>
           <button id="btn-eraser"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Eraser"><span class="material-symbols-outlined opacity-80 text-[20px]">ink_eraser</span></button>
           <button id="btn-move"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Transform / Move"><span class="material-symbols-outlined opacity-80 text-[20px]">transform</span></button>
           <button id="btn-clear"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Clear"><span class="material-symbols-outlined opacity-80 text-[20px]">delete</span></button>
           <button id="btn-camera"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Camera"><span class="material-symbols-outlined opacity-80 text-[20px]">photo_camera</span></button>
           <button id="btn-upload"   class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Upload Image"><span class="material-symbols-outlined opacity-80 text-[20px]">folder_open</span></button>
-          <input type="file" id="file-upload" accept="image/*" hidden />
           <button id="btn-undo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Undo (Cmd/Ctrl + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">undo</span></button>
           <button id="btn-redo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Redo (Cmd/Ctrl + Shift + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">redo</span></button>
           <button id="btn-ai-bg"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="AI Background Removal"><span class="material-symbols-outlined opacity-80 text-[20px]">magic_button</span></button>
           <button id="btn-autocrop" class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Crop"><span class="material-symbols-outlined opacity-80 text-[20px]">crop</span></button>
         </div>
+        <input type="file" id="file-upload" accept="image/*" hidden />
         
         <!-- Brush Size -->
-        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center" id="brush-size-container">
+        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center hidden md:block" id="brush-size-container">
           <label class="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Brush Size <span id="brush-size-val" class="text-white">15</span></label>
           <input type="range" id="brush-size" min="1" max="100" value="15" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
         </div>
@@ -148,16 +148,15 @@
         </div>
       </div>
 
-      <!-- Live Preview -->
-      <div class="hidden md:flex h-40 border-t border-white/10 bg-[#0c0c0c] p-6 flex-col shrink-0">
-        <div class="flex justify-between mb-2">
-          <span class="text-[10px] text-gray-500 uppercase tracking-widest">Type Testing / Live Rendering</span>
-          <div class="flex items-center gap-4">
-            <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors w-48" />
-          </div>
+      <!-- Live Preview (relocated into the Settings drawer on mobile via JS; stays here on desktop) -->
+      <div id="live-preview-anchor"></div>
+      <div id="live-preview-block" class="flex h-24 md:h-40 border-t border-white/10 bg-[#0c0c0c] p-3 md:p-6 flex-col shrink-0">
+        <div class="flex flex-col md:flex-row justify-between mb-2 gap-2">
+          <span class="text-[9px] md:text-[10px] text-gray-500 uppercase tracking-widest hidden md:block">Type Testing / Live Rendering</span>
+          <input type="text" id="preview-input" value="Ngefont 123" placeholder="Type here..." class="bg-transparent border-b border-white/20 text-white outline-none font-mono text-xs focus:border-white transition-colors w-full md:w-48" />
         </div>
         <!-- Raster Live Preview wrapper -->
-        <div id="preview-render" class="h-full whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline pt-2 pb-2 gap-[2px]"></div>
+        <div id="preview-render" class="flex-1 whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline gap-[2px]"></div>
       </div>
     </main>
 
@@ -170,6 +169,9 @@
         </button>
       </div>
       <div class="p-4 md:p-6 space-y-8 flex-1 overflow-y-auto">
+        <!-- Mobile-only: Live Preview gets moved in here by JS (see live-preview-mobile-slot in main.js) -->
+        <section id="live-preview-mobile-slot" class="md:hidden"></section>
+
         <!-- Mobile-only: Brush Size -->
         <section class="md:hidden">
           <h3 class="text-[10px] uppercase tracking-widest text-white mb-4 border-b border-white/10 pb-2">Brush Size</h3>
@@ -197,13 +199,6 @@
               <input type="range" id="slider-dither" min="0" max="100" value="0" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
             </div>
           </div>
-        </section>
-
-        <!-- Mobile-only: Live Preview -->
-        <section class="md:hidden">
-          <h3 class="text-[10px] uppercase tracking-widest text-white mb-4 border-b border-white/10 pb-2">Live Preview</h3>
-          <input type="text" id="preview-input-mobile" value="Ngefont 123" placeholder="Type here..." class="w-full bg-white/5 border border-white/10 text-white outline-none font-mono text-xs p-2 mb-3 focus:border-white/30" />
-          <div id="preview-render-mobile" class="h-16 whitespace-nowrap overflow-x-auto overflow-y-hidden flex items-baseline pt-2 pb-2 gap-[2px] bg-white/5 rounded px-2"></div>
         </section>
 
         <section>
@@ -252,60 +247,60 @@
   </div>
 
   <!-- Mobile Bottom Toolbar -->
-  <nav id="mobile-toolbar" class="md:hidden mobile-bottom-bar shrink-0">
-    <button id="m-btn-draw" class="mobile-tool-btn active" title="Draw">
+  <nav class="mobile-bottom-bar md:hidden">
+    <button id="btn-draw-mobile" class="mobile-tool-btn active" title="Draw">
       <span class="material-symbols-outlined text-[22px]">edit</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">Draw</span>
+      <span class="text-[9px] mt-0.5">Draw</span>
     </button>
-    <button id="m-btn-eraser" class="mobile-tool-btn" title="Eraser">
+    <button id="btn-eraser-mobile" class="mobile-tool-btn" title="Eraser">
       <span class="material-symbols-outlined text-[22px]">ink_eraser</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">Erase</span>
+      <span class="text-[9px] mt-0.5">Erase</span>
     </button>
-    <button id="m-btn-move" class="mobile-tool-btn" title="Move">
+    <button id="btn-move-mobile" class="mobile-tool-btn" title="Transform / Move">
       <span class="material-symbols-outlined text-[22px]">transform</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">Move</span>
+      <span class="text-[9px] mt-0.5">Move</span>
     </button>
-    <button id="m-btn-undo" class="mobile-tool-btn" title="Undo">
+    <button id="btn-undo-mobile" class="mobile-tool-btn" title="Undo">
       <span class="material-symbols-outlined text-[22px]">undo</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">Undo</span>
+      <span class="text-[9px] mt-0.5">Undo</span>
     </button>
-    <button id="m-btn-redo" class="mobile-tool-btn" title="Redo">
+    <button id="btn-redo-mobile" class="mobile-tool-btn" title="Redo">
       <span class="material-symbols-outlined text-[22px]">redo</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">Redo</span>
+      <span class="text-[9px] mt-0.5">Redo</span>
     </button>
-    <button id="m-btn-more" class="mobile-tool-btn" title="More tools">
+    <button id="btn-more" class="mobile-tool-btn" title="More tools">
       <span class="material-symbols-outlined text-[22px]">more_horiz</span>
-      <span class="text-[8px] uppercase tracking-wider mt-0.5">More</span>
+      <span class="text-[9px] mt-0.5">More</span>
     </button>
   </nav>
 
-  <!-- Mobile More Tools Panel -->
-  <div id="mobile-more-panel" class="mobile-more-panel hidden">
-    <div class="flex items-center justify-between p-3 border-b border-white/10">
+  <!-- Mobile More Panel (Clear, Camera, Upload, AI BG, Crop) -->
+  <div id="mobile-more-panel" class="mobile-more-panel hidden md:hidden">
+    <div class="flex justify-between items-center px-4 pt-3 pb-1">
       <span class="text-[10px] text-gray-500 uppercase tracking-widest">More Tools</span>
-      <button onclick="document.getElementById('mobile-more-panel').classList.add('hidden')" class="text-gray-500 active:text-white">
+      <button id="btn-close-more" class="text-gray-500 active:text-white">
         <span class="material-symbols-outlined text-[20px]">close</span>
       </button>
     </div>
-    <div class="grid grid-cols-4 gap-3 p-4">
-      <button id="m-btn-clear" class="mobile-more-item">
-        <span class="material-symbols-outlined text-[24px]">delete</span>
+    <div class="grid grid-cols-3 gap-2 p-4 pt-2">
+      <button id="btn-clear-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">delete</span>
         <span class="text-[9px] mt-1">Clear</span>
       </button>
-      <button id="m-btn-camera" class="mobile-more-item">
-        <span class="material-symbols-outlined text-[24px]">photo_camera</span>
+      <button id="btn-camera-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">photo_camera</span>
         <span class="text-[9px] mt-1">Camera</span>
       </button>
-      <button id="m-btn-upload" class="mobile-more-item">
-        <span class="material-symbols-outlined text-[24px]">folder_open</span>
+      <button id="btn-upload-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">folder_open</span>
         <span class="text-[9px] mt-1">Upload</span>
       </button>
-      <button id="m-btn-ai-bg" class="mobile-more-item">
-        <span class="material-symbols-outlined text-[24px]">magic_button</span>
+      <button id="btn-ai-bg-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">magic_button</span>
         <span class="text-[9px] mt-1">AI BG</span>
       </button>
-      <button id="m-btn-autocrop" class="mobile-more-item">
-        <span class="material-symbols-outlined text-[24px]">crop</span>
+      <button id="btn-autocrop-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">crop</span>
         <span class="text-[9px] mt-1">Crop</span>
       </button>
     </div>
