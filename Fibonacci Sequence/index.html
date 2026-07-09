@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Fibonacci Spiral Presentation - Clean Tech Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Roboto:wght@300;400&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/impress.js/0.5.3/impress-demo.css" rel="stylesheet" />
+    <style>
+        /* ESTETIKA PANEL TEKNIS & GARIS BERSIH */
+        body {
+            background-color: #121212; /* Gelap pekat untuk kontras tinggi */
+            background-image:
+                linear-gradient(rgba(245,197,24,0.035) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(245,197,24,0.035) 1px, transparent 1px);
+            background-size: 50px 50px;
+            font-family: 'Roboto', sans-serif;
+            color: #e0e0e0;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Wrapper khusus untuk menangani fitur Global Zoom dari mouse wheel */
+        #zoom-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            transform-origin: center center;
+            transition: transform 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        #rotate-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            transform-origin: center center;
+        }
+
+        /* Easing custom yang lebih halus untuk navigasi antar-slide normal
+           (menggantikan easing bawaan impress.js agar pergerakan kamera
+           terasa lebih mulus, tidak terlalu tersentak di awal/akhir). */
+        #impress,
+        #impress > div {
+            transition-timing-function: cubic-bezier(0.65, 0, 0.35, 1) !important;
+        }
+
+        /* Konfigurasi Kotak Utama (Sangat ringan tanpa shadow) */
+        .step {
+            width: 1000px;
+            height: 1000px;
+            position: relative;
+            background-color: transparent;
+            border: 1px solid #333333;
+            box-sizing: border-box;
+            transition: opacity 0.8s;
+            pointer-events: none;
+            overflow: hidden; /* Potong garis SVG agar tidak meluber ke slide lain */
+        }
+
+        .step.active {
+            pointer-events: auto;
+            /* Setiap .step punya stacking context sendiri (karena transform),
+               jadi tanpa ini urutan tampil hanya mengikuti urutan DOM --
+               slide lain (terutama yang berukuran besar) bisa menimpa
+               konten slide yang sedang aktif. Naikkan slide aktif paling atas. */
+            z-index: 50;
+        }
+
+        /* Hanya panel konten yang meredup saat tidak fokus -- garis spiral TIDAK ikut redup,
+           supaya seluruh alur spiral selalu terlihat di kanvas. */
+        .step:not(.active) .content {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Garis Spiral -- SVG quarter-arc, selalu tergambar penuh di setiap step */
+        .spiral-arc {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            overflow: visible;
+        }
+
+        .arc-path {
+            fill: none;
+            stroke: #f5c518;
+            stroke-width: 4;
+            stroke-linecap: round;
+            opacity: 0.55;
+            filter: drop-shadow(0 0 6px rgba(245, 197, 24, 0.45));
+            transition: opacity 0.6s ease, filter 0.6s ease;
+        }
+
+        .step.active .arc-path {
+            opacity: 1;
+            filter: drop-shadow(0 0 10px rgba(245, 197, 24, 0.75));
+        }
+
+        /* Area Konten */
+        .content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 78%;
+            max-height: 900px;
+            overflow-y: auto;
+            text-align: left;
+            z-index: 10;
+            padding: 40px;
+            background-color: #121212;
+            border: 1px solid #444;
+        }
+
+        /* Sudut blueprint kecil di panel konten -- pengganti label pojok yang dihapus */
+        .content::before, .content::after {
+            content: "";
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            pointer-events: none;
+        }
+        .content::before {
+            top: -1px; left: -1px;
+            border-top: 2px solid #f5c518;
+            border-left: 2px solid #f5c518;
+        }
+        .content::after {
+            bottom: -1px; right: -1px;
+            border-bottom: 2px solid #f5c518;
+            border-right: 2px solid #f5c518;
+        }
+
+        .content::-webkit-scrollbar { width: 6px; }
+        .content::-webkit-scrollbar-track { background: transparent; }
+        .content::-webkit-scrollbar-thumb { background: #333; }
+
+        h1 {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 64px;
+            color: #f5c518;
+            margin: 0 0 20px 0;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 10px;
+        }
+
+        p {
+            font-size: 24px;
+            line-height: 1.6;
+            margin: 0 0 16px 0;
+            color: #b0b0b0;
+        }
+        p:last-child { margin-bottom: 0; }
+
+        .scale-badge {
+            display: inline-block;
+            background: #f5c518;
+            color: #121212;
+            padding: 8px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-radius: 2px;
+        }
+
+        /* Galeri gambar & video lokal per slide */
+        .gallery-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 24px;
+        }
+        .image-gallery {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 16px;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+            width: 100%;
+        }
+        .image-gallery figure {
+            position: relative;
+            flex: 0 0 calc(33.333% - 11px);
+            margin: 0;
+            border: 1px solid #333;
+            background: #0a0a0a;
+            cursor: zoom-in;
+        }
+        .gallery-btn {
+            position: absolute;
+            background: rgba(18, 18, 18, 0.8);
+            border: 1px solid #f5c518;
+            color: #f5c518;
+            cursor: pointer;
+            font-size: 20px;
+            height: 40px;
+            width: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10;
+        }
+        .gallery-btn:hover {
+            background: #f5c518;
+            color: #121212;
+        }
+        .gallery-btn.prev { left: -20px; }
+        .gallery-btn.next { right: -20px; }
+        .image-gallery img,
+        .image-gallery video {
+            display: block;
+            width: 100%;
+            height: 220px;
+            object-fit: contain; /* media penuh, tidak terpotong */
+            background: #0a0a0a;
+            filter: grayscale(0.35) contrast(1.08);
+            transition: filter 0.4s ease, transform 0.4s ease;
+        }
+        .image-gallery figure:hover img,
+        .image-gallery figure:hover video {
+            filter: grayscale(0) contrast(1);
+            transform: scale(1.02);
+        }
+        .image-gallery figcaption {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #f5c518;
+            padding: 8px 10px;
+            border-top: 1px solid #333;
+        }
+
+        /* Badge kecil penanda item video di galeri */
+        .play-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            width: 26px;
+            height: 26px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 18, 18, 0.75);
+            border: 1px solid #f5c518;
+            color: #f5c518;
+            font-size: 11px;
+            pointer-events: none;
+        }
+
+        /* Fallback -- ditampilkan jika file media lokal gagal dimuat,
+           supaya tata letak galeri TIDAK rusak / kolaps */
+        .media-fallback {
+            display: none;
+            height: 220px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: #666;
+            background: #0a0a0a;
+            word-break: break-word;
+        }
+        .image-gallery figure.media-missing { cursor: default; }
+        .image-gallery figure.media-missing img,
+        .image-gallery figure.media-missing video,
+        .image-gallery figure.media-missing .play-badge {
+            display: none;
+        }
+        .image-gallery figure.media-missing .media-fallback {
+            display: flex;
+        }
+
+        /* Lightbox -- preview gambar ukuran besar */
+        .lightbox {
+            position: fixed;
+            inset: 0;
+            background: rgba(10, 10, 10, 0.94);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 5000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s ease;
+        }
+        .lightbox.open {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .lightbox img,
+        .lightbox video {
+            max-width: 90vw;
+            max-height: 86vh;
+            object-fit: contain;
+            border: 1px solid #f5c518;
+            box-shadow: 0 0 50px rgba(245, 197, 24, 0.25);
+            cursor: default;
+            background: #000;
+        }
+        .lightbox video { display: none; }
+        .lightbox-caption {
+            position: absolute;
+            bottom: 32px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            color: #f5c518;
+        }
+        .lightbox-close {
+            position: absolute;
+            top: 24px;
+            right: 32px;
+            width: 44px;
+            height: 44px;
+            background: none;
+            border: 1px solid #f5c518;
+            color: #f5c518;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 26px;
+            line-height: 1;
+            cursor: pointer;
+        }
+        .lightbox-close:hover {
+            background: #f5c518;
+            color: #121212;
+        }
+
+        /* Navigasi Next / Prev pada preview media (lightbox) */
+        .lightbox-nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 52px;
+            height: 52px;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            background: rgba(18, 18, 18, 0.6);
+            border: 1px solid #f5c518;
+            color: #f5c518;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 22px;
+            cursor: pointer;
+            z-index: 5001;
+        }
+        .lightbox-nav:hover {
+            background: #f5c518;
+            color: #121212;
+        }
+        .lightbox-prev { left: 24px; }
+        .lightbox-next { right: 24px; }
+
+        /* ===== EFEK FINALE -- Alam Semesta Berputar ===== */
+
+        /* Garis spiral bersinar terang saat finale */
+        body.finale-active .arc-path {
+            opacity: 1;
+            stroke-width: 6;
+            filter: drop-shadow(0 0 12px rgba(245, 197, 24, 0.7));
+            transition: all 3s ease;
+        }
+
+        /* Konten menjadi overlay transparan -- garis spiral terlihat menembus */
+        body.finale-active .step .content {
+            opacity: 0.1 !important;
+            pointer-events: none;
+            transition: opacity 3s ease-in-out;
+        }
+        /* Border kotak step juga meredup agar bersih */
+        body.finale-active .step {
+            border-color: rgba(51, 51, 51, 0.1) !important;
+            transition: border-color 3s ease;
+        }
+
+        /* Paksa pergerakan menjadi linear (bukan ease-in-out) agar transisi antar-slide
+           TIDAK melambat-berhenti-lalu-mempercepat lagi di tiap titik sambung.
+           Dengan easing linear, rangkaian transisi menyatu menjadi SATU pergerakan
+           kamera yang mengalir mulus sepanjang loop, seperti satu kali "terbang" utuh. */
+        body.finale-active #impress,
+        body.finale-active #impress > div {
+            transition-timing-function: linear !important;
+        }
+    </style>
+</head>
+<body>
+
+<div id="zoom-wrapper">
+    <div id="rotate-wrapper">
+        <div id="impress" data-transition-duration="1400"></div>
+    </div>
+</div>
+
+<div id="lightbox" class="lightbox" aria-hidden="true">
+    <button id="lightbox-prev" class="lightbox-nav lightbox-prev" aria-label="Sebelumnya">&#10094;</button>
+    <button id="lightbox-close" class="lightbox-close" aria-label="Tutup">&times;</button>
+    <img id="lightbox-img" src="" alt="">
+    <video id="lightbox-video" controls playsinline></video>
+    <button id="lightbox-next" class="lightbox-nav lightbox-next" aria-label="Berikutnya">&#10095;</button>
+    <div id="lightbox-caption" class="lightbox-caption"></div>
+</div>
+
+<audio id="lateralus-audio" src="lateralus.mp3" preload="none"></audio>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/impress.js/0.5.3/impress.js"></script>
+<script>
+    /* ==========================================================================
+       DATA SLIDE
+       --------------------------------------------------------------------------
+       Untuk menambah / mengubah slide, cukup edit array SLIDES di bawah ini.
+       Tidak perlu menyentuh HTML atau logic lain.
+
+       Field per slide:
+         x, y      : posisi step di kanvas impress.js (px)
+         scale     : data-scale bawaan impress.js (level zoom kamera)
+         rotate    : data-rotate bawaan impress.js (derajat)
+         badge     : teks label kecil di atas judul (kosongkan "" untuk sembunyikan)
+         title     : judul slide (h1)
+         paragraphs: array teks paragraf, boleh berisi tag <b>, <i>, <a> dst.
+         media     : array { type, src, caption } -- type: "image" atau "video",
+                     src memanggil file media LOKAL (taruh di folder yang sama
+                     dengan HTML ini). Kosongkan array [] jika slide tanpa media.
+                     Jika file gagal dimuat, tampil fallback -- tata letak tidak rusak.
+
+       Urutan array = urutan navigasi (Spasi / Panah Kanan).
+       ========================================================================== */
+    const SLIDES = [
+        {
+            x: 0, y: 0, scale: 1, rotate: 0,
+            badge: "F(1) = 1 · PENGANTAR",
+            title: "Fibonacci",
+            paragraphs: [
+                "Deret Fibonacci adalah barisan bilangan yang terbentuk dari penjumlahan dua angka sebelumnya, dimulai dari 0 dan 1 (0, 1, 1, 2, 3, 5, 8, dst.). Barisan ini sangat istimewa karena perbandingannya menghasilkan Rasio Emas (sekitar 1.618), sebuah proporsi matematika yang secara menakjubkan sering ditemukan di alam, mulai dari pola spiral cangkang siput hingga susunan biji bunga matahari."
+            ],
+            media: [
+                { type: "image", src: "Fibonacci_spiral.png", caption: "Spiral Fibonacci" },
+                { type: "image", src: "Fractal.jpg", caption: "Pola Fraktal di Alam" }
+            ]
+        },
+        {
+            x: 1000, y: 0, scale: 1, rotate: 90,
+            badge: "F(2) = 1 · SEJARAH & KEGUNAAN",
+            title: "Asal & Penerapan",
+            paragraphs: [
+                "Deret ini dinamai dari ahli matematika Italia, Leonardo dari Pisa (dikenal sebagai Fibonacci), yang memperkenalkannya ke dunia Barat pada tahun 1202 melalui perhitungan simulasi pertumbuhan populasi kelinci. Saat ini, deret Fibonacci memiliki banyak kegunaan praktis di dunia nyata, mulai dari dasar perancangan algoritma dan ilmu komputer, alat bantu analisis pergerakan harga di pasar keuangan (trading), hingga pedoman proporsi visual berbasis Rasio Emas yang banyak digunakan dalam seni, desain grafis, arsitektur, fotografi dan lainnya."
+            ],
+            media: [
+                { type: "image", src: "Fibonacci.jpg", caption: "Leonardo dari Pisa (Fibonacci)" }
+            ]
+        },
+        {
+            x: 500, y: 1500, scale: 2, rotate: 180,
+            badge: "F(3) = 2 · INSPIRASI",
+            title: "Inspirasi",
+            paragraphs: [
+                "Titik tolak eksplorasi ini bersumber dari <i>Lateralus</i> (2001), mahakarya grup <i>progressive metal</i> Tool. Kejeniusan album ini, khususnya pada lagu utama, terletak pada penerapan deret bilangan Fibonacci dan birama progresif (9/8, 8/8, 7/8) yang dilebur secara presisi ke dalam aransemen ritme berdurasi panjang dan sangat kompleks."
+            ],
+            media: [
+                { type: "image", src: "i.jpg", caption: "Inspirasi — I" },
+                { type: "video", src: "h.mp4", caption: "Dokumentasi — H" },
+                { type: "image", src: "g.jpg", caption: "Inspirasi — G" },
+                { type: "video", src: "lateralus.mp4", caption: "Lateralus" },
+                { type: "image", src: "j.jpg", caption: "Inspirasi — J" }
+            ]
+        },
+        {
+            x: -2000, y: 1000, scale: 3, rotate: 270,
+            badge: "F(4) = 3 · PROYEK GANDA",
+            title: "Proyek Ganda Fibonacci",
+            paragraphs: [
+                "Sebagai TOOL worshiper, obsesi terhadap keindahan matematis Rasio Emas (1.618...) memicu lahirnya proyek ganda pada 29 Januari 2024. Melalui ranah sonik, saya bereksperimen memanipulasi kecepatan audio secara berkebalikan berdasarkan deret Fibonacci dan bilangan Lucas (<a href=\"https://amprrrong.bandcamp.com/album/1618-033-988-749\" target=\"_blank\" rel=\"noopener\">amprrrong.bandcamp.com</a>), sekaligus menerjemahkan harmoni spiral tersebut ke ranah visual lewat sketsa awal di Photoshop."
+            ],
+            media: [
+                { type: "image", src: "Golden%20Ratioaa%201.jpg", caption: "Golden Ratio — Sketsa" },
+                { type: "image", src: "sequ.jpg", caption: "Sequence I" },
+                { type: "image", src: "sequu.jpg", caption: "Sequence II" },
+                { type: "image", src: "12.jpg", caption: "Proses — 12" },
+                { type: "image", src: "13.jpg", caption: "Proses — 13" },
+                { type: "image", src: "b.jpg", caption: "Sketsa B" },
+                { type: "image", src: "H.jpg", caption: "Sketsa H" },
+                { type: "image", src: "spanrm.webp", caption: "Spiral Rhythm" },
+                { type: "image", src: "IMG20240309205357.jpg", caption: "Dokumentasi Proses" }
+            ]
+        },
+        {
+            x: -1000, y: -3000, scale: 5, rotate: 360,
+            badge: "F(5) = 5 · PASCA WAHANA",
+            title: "Paradigma Pasca Wahana",
+            paragraphs: [
+                "Proses penciptaan ini kemudian menemukan pijakan teoretisnya pada konsep kondisi pasca wahana menurut Kritikus Seni, Rosalind Krauss. Gagasan ini kini diradikalkan oleh Akal Imitasi (AI) yang bersifat netral terhadap medium. AI melebur segala wujud seni, baik visual, bunyi, maupun kata, menjadi sekumpulan data kuantitatif murni atau meta wahana yang bebas diterjemahkan dan dipertukarkan."
+            ],
+            media: [
+                { type: "image", src: "Rosalind.jpeg", caption: "Rosalind Krauss" }
+            ]
+        },
+        {
+            x: 5500, y: -1500, scale: 8, rotate: 450,
+            badge: "F(6) = 8 · METAKREATIVITAS",
+            title: "Eksperimen Metakreativitas",
+            paragraphs: [
+                "Sejak awal tahun, eksperimen saya dengan AI bergeser dari visual ke bedah arsitektur pemrograman komputasional (<a href=\"https://stafatorrentnet.github.io\" target=\"_blank\" rel=\"noopener\">stafatorrentnet.github.io</a>). Melalui metakreativitas, saya tidak lagi berinteraksi dengan batas fisik medium, melainkan meracik proksi data murni yang netral. Karya kini menjadi aliran data yang dapat ditransformasi lintas wujud; dari presisi garis visual di layar hingga distorsi bising pada instrumen eksperimental yang saya rakit."
+            ],
+            media: []
+        },
+        {
+            x: 3000, y: 9000, scale: 13, rotate: 540,
+            badge: "F(7) = 13 · LINTAS DISIPLIN",
+            title: "Manifestasi Lintas Disiplin",
+            paragraphs: [
+                "Pemahaman tersebut termanifestasi utuh dalam karya <b>AMPRRRONG — 1.618 033 988 749.... (Bytebeat Remix)</b>. Dalam karya ini, data matematis murni dialihwahanakan secara lintas disiplin. Deret Fibonacci dan bilangan Lucas dikonversi langsung menjadi dasar komputasi logika <i>bitwise</i> (<i>bytebeat</i>) untuk membangun arsitektur sintesis suara dalam 12 trek audio, di mana keseluruhan ritme dan putaran umpan baliknya dikendalikan mutlak oleh parameter Rasio Emas."
+            ],
+            media: [
+                { type: "image", src: "ds.jpg", caption: "Diagram Sistem" },
+                { type: "image", src: "full.jpg", caption: "Tampilan Penuh" }
+            ]
+        },
+        {
+            x: -14000, y: 5000, scale: 21, rotate: 630,
+            badge: "F(8) = 21 · ALGORITMA ALAM",
+            title: "Algoritma Alam",
+            paragraphs: [
+                "Proses penciptaan yang berspiral ini memantik keingintahuan saya pada algoritma alam. Contoh nyatanya adalah struktur wajah manusia yang secara alami mengikuti presisi Fibonacci. Ketika harmoni ini dirusak, misalnya melalui operasi plastik di wajah, otak kita secara instingtif akan mendeteksi adanya \"kesalahan kode\" visual. Pada akhirnya, eksperimen seni lintas disiplin ini bukan sekadar pencapaian estetis, melainkan sebuah metode personal untuk menghayati dan memahami bahasa alam semesta."
+            ],
+            media: [
+                { type: "image", src: "final.webp", caption: "Algoritma Alam" }
+            ]
+        }
+    ];
+
+    /* ==========================================================================
+       RENDER -- mengubah SLIDES menjadi elemen .step di dalam #impress
+       (Tidak perlu diubah saat hanya menambah/mengedit konten slide di atas)
+       ========================================================================== */
+    function mediaItemHtml(item, slideIdx, mediaIdx) {
+        const isVideo = item.type === 'video';
+        const caption = item.caption || '';
+        const mediaTag = isVideo
+            ? `<video data-role="thumb" src="${item.src}" muted playsinline preload="metadata" onerror="handleMediaError(this)"></video>`
+            : `<img data-role="thumb" src="${item.src}" alt="${caption}" loading="lazy" onerror="handleMediaError(this)">`;
+        const playBadge = isVideo ? `<span class="play-badge">&#9654;</span>` : '';
+        return `<figure class="gallery-item" data-slide="${slideIdx}" data-media="${mediaIdx}">
+                ${mediaTag}
+                ${playBadge}
+                <div class="media-fallback">MEDIA TIDAK DITEMUKAN<br>${item.src}</div>
+                <figcaption>${caption}</figcaption>
+            </figure>`;
+    }
+
+    // Dipanggil otomatis lewat atribut onerror pada <img>/<video> galeri --
+    // jika file media lokal gagal dimuat, tampilkan fallback alih-alih merusak tata letak.
+    function handleMediaError(el) {
+        const figure = el.closest('.gallery-item');
+        if (figure) figure.classList.add('media-missing');
+    }
+
+    function scrollGallery(e, btn, dir) {
+        e.stopPropagation();
+        const gallery = btn.parentElement.querySelector('.image-gallery');
+        const scrollAmount = gallery.clientWidth * 0.8;
+        gallery.scrollBy({ left: dir * scrollAmount, behavior: 'smooth' });
+    }
+
+    function renderSlides(slides) {
+        const container = document.getElementById('impress');
+        const frag = document.createDocumentFragment();
+
+        slides.forEach((slide, i) => {
+            const step = document.createElement('div');
+            step.className = 'step';
+            step.id = 'step-' + (i + 1);
+            step.dataset.x = slide.x;
+            step.dataset.y = slide.y;
+            step.dataset.scale = slide.scale;
+            step.dataset.rotate = slide.rotate;
+
+            const badgeHtml = slide.badge
+                ? `<div class="scale-badge">${slide.badge}</div>`
+                : '';
+
+            const paragraphsHtml = (slide.paragraphs || [])
+                .map(p => `<p>${p}</p>`)
+                .join('');
+
+            const mediaList = slide.media || slide.images || [];
+            let imagesHtml = '';
+            if (mediaList.length) {
+                const showNav = mediaList.length > 3;
+                imagesHtml = `
+                    <div class="gallery-container">
+                        ${showNav ? `<button class="gallery-btn prev" onclick="scrollGallery(event, this, -1)">&#10094;</button>` : ''}
+                        <div class="image-gallery">
+                            ${mediaList.map((m, j) => mediaItemHtml(m, i, j)).join('')}
+                        </div>
+                        ${showNav ? `<button class="gallery-btn next" onclick="scrollGallery(event, this, 1)">&#10095;</button>` : ''}
+                    </div>
+                `;
+            }
+
+            step.innerHTML = `
+                <svg class="spiral-arc" viewBox="0 0 1000 1000" preserveAspectRatio="none">
+                    <path class="arc-path" d="M 1000 0 A 1000 1000 0 0 0 0 1000"></path>
+                </svg>
+                <div class="content">
+                    ${badgeHtml}
+                    <h1>${slide.title}</h1>
+                    ${paragraphsHtml}
+                    ${imagesHtml}
+                </div>
+            `;
+
+            frag.appendChild(step);
+        });
+
+        // Tambahkan overview step tersembunyi untuk zoom out (pusat spiral)
+        const overviewStep = document.createElement('div');
+        overviewStep.id = 'overview';
+        overviewStep.className = 'step';
+        // Pusatkan di tengah-tengah spiral berdasarkan rata-rata koordinat semua slide
+        overviewStep.dataset.x = -7500;
+        overviewStep.dataset.y = 5000;
+        overviewStep.dataset.scale = 22;
+        overviewStep.dataset.rotate = 315; // Sudut tengah spiral
+        overviewStep.dataset.transitionDuration = 45000; 
+        frag.appendChild(overviewStep);
+
+        container.appendChild(frag);
+    }
+
+    renderSlides(SLIDES);
+
+    // 1. Inisialisasi impress.js (dijalankan SETELAH slide dirender)
+    impress().init();
+
+    /* ==========================================================================
+       PREVIEW MEDIA (LIGHTBOX) -- klik thumbnail untuk preview besar,
+       dengan navigasi Next / Prev antar media dalam slide yang sama.
+       ========================================================================== */
+    const lightbox = document.getElementById('lightbox');
+    const lightboxImg = document.getElementById('lightbox-img');
+    const lightboxVideo = document.getElementById('lightbox-video');
+    const lightboxCaption = document.getElementById('lightbox-caption');
+    const lightboxClose = document.getElementById('lightbox-close');
+    const lightboxPrev = document.getElementById('lightbox-prev');
+    const lightboxNext = document.getElementById('lightbox-next');
+
+    let currentGalleryMedia = [];
+    let currentMediaIndex = 0;
+
+    function stopLightboxVideo() {
+        if (!lightboxVideo.paused) lightboxVideo.pause();
+        lightboxVideo.removeAttribute('src');
+        lightboxVideo.load();
+    }
+
+    function renderLightboxMedia() {
+        const item = currentGalleryMedia[currentMediaIndex];
+        if (!item) return;
+        stopLightboxVideo();
+
+        if (item.type === 'video') {
+            lightboxImg.style.display = 'none';
+            lightboxVideo.style.display = 'block';
+            lightboxVideo.src = item.src;
+            lightboxVideo.play().catch(() => {
+                // Autoplay bisa diblokir browser -- pengguna tetap bisa menekan tombol play manual.
+            });
+        } else {
+            lightboxVideo.style.display = 'none';
+            lightboxImg.style.display = 'block';
+            lightboxImg.src = item.src;
+            lightboxImg.alt = item.caption || '';
+        }
+
+        const counter = currentGalleryMedia.length > 1
+            ? ` (${currentMediaIndex + 1}/${currentGalleryMedia.length})`
+            : '';
+        lightboxCaption.textContent = (item.caption || '') + counter;
+
+        const showNav = currentGalleryMedia.length > 1;
+        lightboxPrev.style.display = showNav ? 'flex' : 'none';
+        lightboxNext.style.display = showNav ? 'flex' : 'none';
+    }
+
+    function openLightbox(mediaArray, index) {
+        if (!mediaArray || !mediaArray.length) return;
+        currentGalleryMedia = mediaArray;
+        currentMediaIndex = index || 0;
+        renderLightboxMedia();
+        lightbox.classList.add('open');
+        lightbox.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeLightbox() {
+        stopLightboxVideo();
+        lightbox.classList.remove('open');
+        lightbox.setAttribute('aria-hidden', 'true');
+        lightboxImg.src = '';
+    }
+
+    function stepLightboxMedia(direction) {
+        if (!currentGalleryMedia.length) return;
+        currentMediaIndex = (currentMediaIndex + direction + currentGalleryMedia.length) % currentGalleryMedia.length;
+        renderLightboxMedia();
+    }
+
+    // Delegasi klik: berlaku untuk semua item galeri, termasuk slide yang ditambah belakangan
+    document.getElementById('impress').addEventListener('click', (e) => {
+        const item = e.target.closest('.gallery-item');
+        if (!item || item.classList.contains('media-missing')) return;
+        const slideIdx = parseInt(item.dataset.slide, 10);
+        const mediaIdx = parseInt(item.dataset.media, 10);
+        const slide = SLIDES[slideIdx];
+        const mediaList = slide && (slide.media || slide.images);
+        if (!mediaList) return;
+        openLightbox(mediaList, mediaIdx);
+    });
+
+    lightboxClose.addEventListener('click', closeLightbox);
+    lightboxPrev.addEventListener('click', (e) => { e.stopPropagation(); stepLightboxMedia(-1); });
+    lightboxNext.addEventListener('click', (e) => { e.stopPropagation(); stepLightboxMedia(1); });
+    lightboxImg.addEventListener('click', (e) => e.stopPropagation());
+    lightboxVideo.addEventListener('click', (e) => e.stopPropagation());
+    lightbox.addEventListener('click', closeLightbox); // klik area gelap = tutup
+
+    // Escape menutup lightbox, panah kiri/kanan pindah media; selama lightbox terbuka,
+    // cegah navigasi slide (panah/spasi) di baliknya
+    document.addEventListener('keydown', (e) => {
+        if (!lightbox.classList.contains('open')) return;
+        if (e.key === 'Escape') {
+            closeLightbox();
+        } else if (e.key === 'ArrowRight') {
+            stepLightboxMedia(1);
+        } else if (e.key === 'ArrowLeft') {
+            stepLightboxMedia(-1);
+        }
+        e.stopPropagation();
+    }, true);
+
+    // 2. Mesin Global Zoom Kustom
+    const zoomWrapper = document.getElementById('zoom-wrapper');
+    let currentZoom = 1;
+
+    window.addEventListener('wheel', (e) => {
+        // Abaikan aksi scroll default browser
+        e.preventDefault();
+
+        // Jangan zoom kanvas saat sedang preview gambar (lightbox terbuka)
+        if (lightbox.classList.contains('open')) return;
+
+        // Hitung arah scroll (Atas = Zoom In, Bawah = Zoom Out)
+        if (e.deltaY > 0) {
+            currentZoom *= 0.85;
+        } else {
+            currentZoom *= 1.15;
+        }
+
+        // Batasi rentang zoom (0.05x hingga 3x ukuran layar)
+        currentZoom = Math.max(0.05, Math.min(currentZoom, 3));
+
+        // Terapkan skala ke wrapper utama
+        zoomWrapper.style.transform = `scale(${currentZoom})`;
+    }, { passive: false });
+
+    // 3. Finale -- khusus slide TERAKHIR:
+    //    - setelah 15 detik di slide ini, lateralus.mp3 diputar otomatis
+    //    - saat tombol Space ditekan, kanvas zoom-out menampilkan semua slide,
+    //      seluruh garis spiral berputar & bercahaya, dengan lateralus.mp3 sebagai latar
+    const lastStep = document.getElementById('step-' + SLIDES.length);
+    const finaleAudio = document.getElementById('lateralus-audio');
+    let finaleTimer = null;
+    let finaleActive = false;
+    
+    // Urutan slide untuk loop -- hanya slide 3-8 (2 kurva terkecil dihilangkan)
+    const loopSequence = [8, 7, 6, 5, 4, 3, 4, 5, 6, 7];
+    let loopIdx = 0;
+
+    function nextFinaleStep() {
+        if (!finaleActive) return;
+        loopIdx = (loopIdx + 1) % loopSequence.length;
+        const nextStepId = 'step-' + loopSequence[loopIdx];
+        const stepEl = document.getElementById(nextStepId);
+        if (stepEl) {
+            // Durasi 8 detik per slide -- ringan & sinematik
+            stepEl.dataset.transitionDuration = 8000;
+            impress().goto(nextStepId);
+        }
+    }
+
+    function ensureFinaleAudioPlaying() {
+        if (!finaleAudio) return;
+        if (finaleAudio.paused) {
+            finaleAudio.play().catch(() => {});
+        }
+    }
+
+    function triggerFinale() {
+        if (finaleActive) return;
+        finaleActive = true;
+        ensureFinaleAudioPlaying();
+        document.body.classList.add('finale-active');
+        
+        // Memulai rentetan animasi loop slide yang menyatu menjadi satu pergerakan konstan
+        loopIdx = 0;
+        nextFinaleStep();
+        
+        // Berhenti setelah 90 detik (1.5 menit)
+        setTimeout(() => {
+            if (finaleActive) {
+                resetFinale();
+                const step8 = document.getElementById('step-8');
+                if (step8) step8.dataset.transitionDuration = 5000;
+                impress().goto('step-8');
+            }
+        }, 90000);
+        
+        // Reset manual zoom wrapper secara perlahan
+        zoomWrapper.style.transition = 'transform 10s ease-in-out';
+        currentZoom = 1; 
+        zoomWrapper.style.transform = `scale(1)`;
+    }
+
+    function resetFinale() {
+        finaleActive = false;
+        document.body.classList.remove('finale-active');
+        zoomWrapper.style.transition = 'transform 0.2s cubic-bezier(0.25, 1, 0.5, 1)';
+        if (finaleAudio) {
+            finaleAudio.pause();
+            finaleAudio.currentTime = 0;
+        }
+    }
+
+    // Auto-Reset Zoom saat berpindah slide + pengaturan timer finale
+    document.addEventListener("impress:stepenter", function (e) {
+        if (finaleTimer) {
+            clearTimeout(finaleTimer);
+            finaleTimer = null;
+        }
+
+        if (finaleActive) {
+            // Begitu satu transisi slide selesai, LANGSUNG panggil transisi slide berikutnya
+            // Ini membuat seluruh animasi menyatu menjadi satu (loop motion)
+            nextFinaleStep();
+        } else {
+            const enteredLastStep = lastStep && e.target === lastStep;
+            if (enteredLastStep) {
+                finaleTimer = setTimeout(ensureFinaleAudioPlaying, 15000);
+            }
+        }
+
+        currentZoom = 1; // Kembalikan ke ukuran layar normal
+        zoomWrapper.style.transform = `scale(${currentZoom})`;
+    });
+
+    // Tombol Space di slide terakhir memicu efek finale, bukan navigasi impress.js biasa
+    document.addEventListener('keydown', (e) => {
+        if (lightbox.classList.contains('open')) return;
+        const isSpace = e.code === 'Space' || e.key === ' ' || e.key === 'Spacebar';
+        if (!isSpace) return;
+
+        const activeStep = document.querySelector('.step.active');
+        if (activeStep && lastStep && activeStep === lastStep) {
+            e.preventDefault();
+            e.stopPropagation();
+            triggerFinale();
+        }
+    }, true);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,6 @@
+/* Mengatur gambar di dalam canvas agar memenuhi bounding box */
+.canvas-node-content img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain; /* Gunakan 'cover' jika ingin memenuhi area tanpa ruang kosong */
+}

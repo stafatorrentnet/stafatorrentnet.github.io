@@ -1,0 +1,219 @@
+{
+  "main": {
+    "id": "5db17c4f932a52e1",
+    "type": "split",
+    "children": [
+      {
+        "id": "c673455afca25168",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "b4a4bc246c0778fe",
+            "type": "leaf",
+            "state": {
+              "type": "canvas",
+              "state": {
+                "file": "1.618 033 988 749..../Presentasi.canvas",
+                "viewState": {
+                  "x": 1712.1425133120642,
+                  "y": 1616.1113107291567,
+                  "zoom": -3.0077677408854164
+                }
+              },
+              "icon": "lucide-layout-dashboard",
+              "title": "Presentasi"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "dd4598c9d1827665",
+    "type": "split",
+    "children": [
+      {
+        "id": "0041cfe32674d504",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "66d2adfed7beb716",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "6edd544955699c3f",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "",
+                "matchingCase": false,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "d6160f7e2104c486",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ],
+        "currentTab": 1
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "38affd3c47969294",
+    "type": "split",
+    "children": [
+      {
+        "id": "b431c50af9da675e",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "9758c08c6450b393",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "1.618 033 988 749..../Presentasi.canvas",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for Presentasi"
+            }
+          },
+          {
+            "id": "2f209903640a7740",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "1.618 033 988 749..../Presentasi.canvas",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from Presentasi"
+            }
+          },
+          {
+            "id": "a7e5c7e6869f8ec0",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "5ad1b402b33e4453",
+            "type": "leaf",
+            "state": {
+              "type": "all-properties",
+              "state": {
+                "sortOrder": "frequency",
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-archive",
+              "title": "All properties"
+            }
+          },
+          {
+            "id": "d7c880e8c5cbe79d",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "1.618 033 988 749..../Presentasi.canvas",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Presentasi"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "b4a4bc246c0778fe",
+  "lastOpenFiles": [
+    "Proses Melukis/spanrm.webp",
+    "AMPRRRONG/Golden Ratioaa 2.jpg",
+    "1.618 033 988 749..../Fibonacci.md",
+    "AMPRRRONG/b.jpg",
+    "1.618 033 988 749..../Presentasi.canvas",
+    "Proses Melukis/a.jpg",
+    "Proses Melukis/b.jpg",
+    "Proses Melukis/C.jpg",
+    "Proses Melukis/D.jpg",
+    "Proses Melukis/E.jpg",
+    "Proses Melukis/F.jpg",
+    "Proses Melukis/G.jpg",
+    "Proses Melukis/H.jpg",
+    "AMPRRRONG",
+    "untitled folder",
+    "TOOL/h.mp4",
+    "TOOL/9. Lateralus.mp3",
+    "TOOL",
+    "Proses Melukis",
+    "TOOL Worshiping.md",
+    "1.618 033 988 749..../9. Lateralus.mp3",
+    "9. Lateralus.mp3",
+    "Untitled.canvas",
+    "Fibonacoy.md",
+    "1.618 033 988 749..../h.mp4",
+    "1.618 033 988 749...."
+  ]
+}
