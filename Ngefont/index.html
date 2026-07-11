@@ -104,6 +104,7 @@
           <button id="btn-redo"     class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Redo (Cmd/Ctrl + Shift + Z)"><span class="material-symbols-outlined opacity-80 text-[20px]">redo</span></button>
           <button id="btn-ai-bg"    class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="AI Background Removal"><span class="material-symbols-outlined opacity-80 text-[20px]">magic_button</span></button>
           <button id="btn-autocrop" class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Crop"><span class="material-symbols-outlined opacity-80 text-[20px]">crop</span></button>
+          <button id="btn-center" class="w-10 h-10 bg-[#1a1a1a] border border-white/10 flex items-center justify-center text-white hover:bg-white/20 transition-colors" title="Center Glyph"><span class="material-symbols-outlined opacity-80 text-[20px]">center_focus_strong</span></button>
         </div>
         <input type="file" id="file-upload" accept="image/*" hidden />
         
@@ -209,6 +210,61 @@
         </section>
 
         <section>
+          <h3 class="text-[10px] uppercase tracking-widest text-white mb-4 border-b border-white/10 pb-2">Font Metrics <span class="text-gray-500">/ Guides</span></h3>
+          <div class="space-y-3">
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-red-400/80">Ascender</label>
+                <span id="val-guide-ascender" class="text-gray-400">31</span>
+              </div>
+              <input type="range" id="guide-ascender" min="0" max="256" value="31" class="w-full accent-red-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-red-400/60">Cap Height</label>
+                <span id="val-guide-capHeight" class="text-gray-400">128</span>
+              </div>
+              <input type="range" id="guide-capHeight" min="0" max="400" value="128" class="w-full accent-red-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-red-400/60">x-Height</label>
+                <span id="val-guide-xHeight" class="text-gray-400">241</span>
+              </div>
+              <input type="range" id="guide-xHeight" min="0" max="450" value="241" class="w-full accent-red-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-white/90 font-medium">Baseline</label>
+                <span id="val-guide-baseline" class="text-gray-400">358</span>
+              </div>
+              <input type="range" id="guide-baseline" min="100" max="480" value="358" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-red-400/80">Descender</label>
+                <span id="val-guide-descender" class="text-gray-400">435</span>
+              </div>
+              <input type="range" id="guide-descender" min="200" max="512" value="435" class="w-full accent-red-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div class="border-t border-white/5 pt-3">
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-blue-400/60">Left Bearing</label>
+                <span id="val-guide-leftBearing" class="text-gray-400">25</span>
+              </div>
+              <input type="range" id="guide-leftBearing" min="0" max="200" value="25" class="w-full accent-blue-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+            <div>
+              <div class="flex justify-between text-xs mb-1">
+                <label class="text-blue-400/60">Right Bearing</label>
+                <span id="val-guide-rightBearing" class="text-gray-400">487</span>
+              </div>
+              <input type="range" id="guide-rightBearing" min="300" max="512" value="487" class="w-full accent-blue-400 bg-white/10 h-1 rounded-full appearance-none">
+            </div>
+          </div>
+        </section>
+
+        <section>
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-[10px] uppercase tracking-widest text-white">Kerning Groups</h3>
             <button id="btn-new-kern" class="text-[10px] uppercase tracking-widest text-green-400 hover:text-green-300 transition-colors cursor-pointer bg-transparent border-none">+ New</button>
@@ -302,6 +358,10 @@
       <button id="btn-upload-mobile" class="mobile-more-item">
         <span class="material-symbols-outlined text-[22px]">folder_open</span>
         <span class="text-[9px] mt-1">Upload</span>
+      </button>
+      <button id="btn-center-mobile" class="mobile-more-item">
+        <span class="material-symbols-outlined text-[22px]">center_focus_strong</span>
+        <span class="text-[9px] mt-1">Center</span>
       </button>
       <button id="btn-ai-bg-mobile" class="mobile-more-item">
         <span class="material-symbols-outlined text-[22px]">magic_button</span>

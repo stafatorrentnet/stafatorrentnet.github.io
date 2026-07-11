@@ -1,11 +1,16 @@
 // ─── Guides ──────────────────────────────────────────────────────────────────
-const GUIDES = {
-    ascender:  { y: 31,  label: 'Ascender',   color: 'rgba(255,80,80,0.8)' },
-    capHeight: { y: 128, label: 'Cap Height', color: 'rgba(255,80,80,0.8)' },
-    xHeight:   { y: 241, label: 'x-Height',   color: 'rgba(255,80,80,0.8)'  },
-    baseline:  { y: 358, label: 'Baseline',   color: 'rgba(255,50,50,0.9)' },
-    descender: { y: 435, label: 'Descender',  color: 'rgba(255,80,80,0.8)' },
-};
+function getDefaultGuides() {
+    return JSON.parse(JSON.stringify({
+        ascender:     { y: 31,  label: 'Ascender',   color: 'rgba(255,80,80,0.8)' },
+        capHeight:    { y: 128, label: 'Cap Height',  color: 'rgba(255,80,80,0.8)' },
+        xHeight:      { y: 241, label: 'x-Height',    color: 'rgba(255,80,80,0.8)' },
+        baseline:     { y: 358, label: 'Baseline',     color: 'rgba(255,50,50,0.9)' },
+        descender:    { y: 435, label: 'Descender',    color: 'rgba(255,80,80,0.8)' },
+        leftBearing:  { x: 25,  label: 'L-Bearing',    color: 'rgba(100,160,255,0.5)' },
+        rightBearing: { x: 487, label: 'R-Bearing',    color: 'rgba(100,160,255,0.5)' },
+    }));
+}
+let GUIDES = getDefaultGuides();
 const guideCanvas = document.getElementById('guide-canvas');
 const guideCtx    = guideCanvas.getContext('2d');
 let   showGuides  = true;
@@ -13,13 +18,18 @@ let   showGuides  = true;
 function drawGuides() {
     guideCtx.clearRect(0, 0, 512, 512);
     if (!showGuides) return;
-    [25, 487].forEach(x => {
-        guideCtx.strokeStyle = 'rgba(255,80,80,0.5)';
+
+    // Vertical bearing guides
+    [GUIDES.leftBearing.x, GUIDES.rightBearing.x].forEach(x => {
+        guideCtx.strokeStyle = 'rgba(100,160,255,0.45)';
         guideCtx.lineWidth = 1; guideCtx.setLineDash([4, 4]);
         guideCtx.beginPath(); guideCtx.moveTo(x, 0); guideCtx.lineTo(x, 512); guideCtx.stroke();
     });
     guideCtx.setLineDash([]);
+
+    // Horizontal typographic guides
     for (const [key, g] of Object.entries(GUIDES)) {
+        if (key === 'leftBearing' || key === 'rightBearing') continue;
         const isBaseline = key === 'baseline';
         guideCtx.strokeStyle = g.color;
         guideCtx.lineWidth = isBaseline ? 1.5 : 1;
@@ -32,6 +42,37 @@ function drawGuides() {
 }
 document.getElementById('toggle-guides').addEventListener('change', e => { showGuides = e.target.checked; drawGuides(); });
 drawGuides();
+
+// ─── Guide Slider Wiring ────────────────────────────────────────────────────
+const guideSliderKeys = ['ascender', 'capHeight', 'xHeight', 'baseline', 'descender', 'leftBearing', 'rightBearing'];
+guideSliderKeys.forEach(key => {
+    const slider = document.getElementById('guide-' + key);
+    const valEl  = document.getElementById('val-guide-' + key);
+    if (!slider) return;
+    slider.addEventListener('input', e => {
+        const v = parseInt(e.target.value, 10);
+        if (key === 'leftBearing' || key === 'rightBearing') {
+            GUIDES[key].x = v;
+        } else {
+            GUIDES[key].y = v;
+        }
+        if (valEl) valEl.innerText = v;
+        drawGuides();
+        if (typeof updateLivePreview === 'function') updateLivePreview();
+    });
+});
+
+// Sync slider UI from GUIDES values (used after project load)
+function syncGuideSliders() {
+    guideSliderKeys.forEach(key => {
+        const slider = document.getElementById('guide-' + key);
+        const valEl  = document.getElementById('val-guide-' + key);
+        if (!slider) return;
+        const v = (key === 'leftBearing' || key === 'rightBearing') ? GUIDES[key].x : GUIDES[key].y;
+        slider.value = v;
+        if (valEl) valEl.innerText = v;
+    });
+}
 
 // ─── State ──────────────────────────────────────────────────────────────────
 const charsList = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*()_+-=[]{};':\",./\<>?\\|`~ ".split('');
@@ -52,7 +93,8 @@ function getCharData(char) {
         chars[char] = {
             sourceCanvas: cvs, bgTolerance: 20, ditherLevel: 0,
             processedImageData: null, populated: false,
-            history: [ctx.getImageData(0,0,512,512)], historyIndex: 0
+            history: [ctx.getImageData(0,0,512,512)], historyIndex: 0,
+            guides: getDefaultGuides()
         };
     }
     return chars[char];
@@ -247,6 +289,51 @@ document.getElementById('btn-draw').onclick   = () => setTool('draw');
 document.getElementById('btn-eraser').onclick = () => setTool('erase');
 document.getElementById('btn-move').onclick   = () => setTool('transform');
 
+// Center Glyph logic
+function centerGlyph() {
+    if (currentTool === 'transform') setTool('draw');
+    const d = getCharData(activeChar);
+    
+    const w = 512, h = 512;
+    const ctx = d.sourceCanvas.getContext('2d');
+    const idata = ctx.getImageData(0,0,w,h);
+    const px = idata.data;
+    
+    let minX = w, maxX = -1, minY = h, maxY = -1;
+    for (let y = 0; y < h; y++) {
+        for (let x = 0; x < w; x++) {
+            const i = (y * w + x) * 4;
+            if (px[i+3] > 0 && (px[i] < 250 || px[i+1] < 250 || px[i+2] < 250)) {
+                if (x < minX) minX = x;
+                if (x > maxX) maxX = x;
+                if (y < minY) minY = y;
+                if (y > maxY) maxY = y;
+            }
+        }
+    }
+    
+    if (maxX < minX || maxY < minY) return;
+    
+    const cx = (minX + maxX) / 2;
+    const cy = (minY + maxY) / 2;
+    const dx = Math.round(256 - cx);
+    const dy = Math.round(256 - cy);
+    
+    if (Math.abs(dx) < 1 && Math.abs(dy) < 1) return;
+    
+    const tempC = document.createElement('canvas'); tempC.width = w; tempC.height = h;
+    tempC.getContext('2d').drawImage(d.sourceCanvas, 0, 0);
+    
+    ctx.fillStyle = 'white';
+    ctx.fillRect(0, 0, w, h);
+    ctx.drawImage(tempC, dx, dy);
+    
+    saveState();
+    updateDisplay();
+}
+document.getElementById('btn-center')?.addEventListener('click', centerGlyph);
+document.getElementById('btn-center-mobile')?.addEventListener('click', () => { centerGlyph(); closeAllDrawers(); });
+
 // ─── History ────────────────────────────────────────────────────────────────
 function saveState() {
     const data = getCharData(activeChar);
@@ -396,6 +483,12 @@ function selectChar(c) {
     const mobileLabel = document.getElementById('mobile-sticky-char-label');
     if (mobileLabel) mobileLabel.innerText = c;
     const d = getCharData(c);
+    
+    // Switch to active glyph's guides
+    GUIDES = d.guides;
+    syncGuideSliders();
+    drawGuides();
+    
     document.getElementById('slider-bg').value = d.bgTolerance; document.getElementById('val-bg').innerText = d.bgTolerance;
     document.getElementById('slider-dither').value = d.ditherLevel; document.getElementById('val-dither').innerText = d.ditherLevel;
     updateDisplay(); updatePopulatedStats();
@@ -1157,16 +1250,48 @@ function updateLivePreview() {
         
         const data = chars[c];
         if (data && data.processedImageData && data.populated) {
-            const tempC = document.createElement('canvas'); tempC.width=512; tempC.height=512;
-            tempC.getContext('2d').putImageData(data.processedImageData,0,0);
+            const W = 512;
+            let minX = W, maxX = -1;
+            const px = data.processedImageData.data;
+            for (let y = 0; y < 512; y++) {
+                for (let x = 0; x < W; x++) {
+                    if (px[(y * W + x) * 4 + 3] > 128) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                    }
+                }
+            }
+
+            const g = data.guides || GUIDES;
+
+            const leftSideBearing = g.leftBearing.x;
+            const rightSideBearing = 512 - g.rightBearing.x;
+            const typoHeight = g.descender.y - g.ascender.y;
+
+            let sx = 0, sw = 512;
+            if (maxX >= minX) {
+                sx = minX - leftSideBearing;
+                sw = (maxX - minX) + leftSideBearing + rightSideBearing;
+            }
             
-            // The processedImageData already drops alpha where the background was removed,
-            // leaving solid black ink for the glyph shape. With the white preview backdrop,
-            // that reads directly as black-on-white — no invert filter needed anymore.
-            tempC.className = "inline-block h-[1.5em] w-auto object-contain";
-            tempC.style.verticalAlign = "baseline"; // Needs manual CSS fine-tuning
+            const tempC = document.createElement('canvas'); 
+            tempC.width = Math.max(1, sw); 
+            tempC.height = 512;
             
-            if(kv!==0) tempC.style.marginRight = (kv*100)+'%';
+            const fullC = document.createElement('canvas'); fullC.width = 512; fullC.height = 512;
+            fullC.getContext('2d').putImageData(data.processedImageData, 0, 0);
+            
+            tempC.getContext('2d').drawImage(fullC, sx, 0, sw, 512, 0, 0, sw, 512);
+            
+            const hEm = (512 / typoHeight) * 1.5;
+            tempC.className = "inline-block w-auto object-contain";
+            tempC.style.height = `${hEm}em`;
+            
+            const distToBottom = 512 - g.baseline.y;
+            const mbEm = -(distToBottom / typoHeight) * 1.5;
+            tempC.style.marginBottom = `${mbEm}em`;
+            
+            if(kv !== 0) tempC.style.marginRight = (kv * 100) + '%';
             
             previewRender.appendChild(tempC);
         } else {
@@ -1193,7 +1318,8 @@ document.getElementById('btn-save-project').onclick = () => {
                 imageDataURL: data.sourceCanvas.toDataURL('image/png'),
                 bgTolerance: data.bgTolerance,
                 ditherLevel: data.ditherLevel,
-                populated: true
+                populated: true,
+                guides: data.guides
             };
         }
     }
@@ -1231,6 +1357,15 @@ document.getElementById('file-load-project').onchange = async (e) => {
                     charObj.ditherLevel = cData.ditherLevel || 0;
                     charObj.populated = cData.populated;
                     
+                    if (cData.guides) {
+                        for (const key in cData.guides) {
+                            if (charObj.guides[key]) {
+                                if (cData.guides[key].y !== undefined) charObj.guides[key].y = cData.guides[key].y;
+                                if (cData.guides[key].x !== undefined) charObj.guides[key].x = cData.guides[key].x;
+                            }
+                        }
+                    }
+                    
                     const img = new Image();
                     await new Promise(r => { img.onload = r; img.src = cData.imageDataURL; });
                     const ctx = charObj.sourceCanvas.getContext('2d');
@@ -1248,6 +1383,12 @@ document.getElementById('file-load-project').onchange = async (e) => {
                 }
                 updateCharThumbnail(ch, chars[ch].sourceCanvas);
             }
+            
+            // Re-select active character to sync UI and globals
+            GUIDES = getCharData(activeChar).guides;
+            syncGuideSliders();
+            drawGuides();
+            
             updatePopulatedStats();
             updateDisplay();
             updateLivePreview();
@@ -1338,7 +1479,7 @@ document.getElementById('btn-export').onclick = () => {
 // Converts bitmap glyph to vector contours by downsampling, run-length
 // encoding rows, merging vertically, and outputting rectangle contours
 // with correct CCW winding for CFF/OTF fonts.
-function buildVectorContours(pid, scale, asc, xoff) {
+function buildVectorContours(pid, scale, canvasBaselineY, xoff) {
     const contours = [];
     const srcW = pid.width, srcH = pid.height;
     
@@ -1386,13 +1527,14 @@ function buildVectorContours(pid, scale, asc, xoff) {
                     for (let xx = gx; xx < gx2; xx++)
                         used[yy * gw + xx] = 1;
                 
-                // Convert grid coords → pixel coords → font coords
                 const px1 = gx * ds, px2 = gx2 * ds;
                 const py1 = gy * ds, py2 = gy2 * ds;
                 const fx1 = Math.round((px1 + xoff) * scale);
                 const fx2 = Math.round((px2 + xoff) * scale);
-                const fy1 = Math.round(asc - py1 * scale);   // top (higher Y in font)
-                const fy2 = Math.round(asc - py2 * scale);   // bottom (lower Y in font)
+                
+                // font Y = 0 is baseline. Higher canvas Y is lower font Y.
+                const fy1 = Math.round((canvasBaselineY - py1) * scale);   // top (higher Y in font)
+                const fy2 = Math.round((canvasBaselineY - py2) * scale);   // bottom (lower Y in font)
                 
                 // CCW winding for CFF: top-left → bottom-left → bottom-right → top-right
                 contours.push([
@@ -1415,7 +1557,14 @@ function buildVectorContours(pid, scale, asc, xoff) {
 function generateFontObj() {
     if (!window._FontFlux) throw new Error('FontFlux belum dimuat. Pastikan koneksi internet aktif dan refresh halaman.');
     const FontFlux = window._FontFlux;
-    const upm=1000, asc=800, dsc=-200, scale=upm/512;
+    const upm = 1000;
+    
+    const baseGuides = (chars['A'] && chars['A'].populated) ? chars['A'].guides : GUIDES;
+    const baseTypoHeight = baseGuides.descender.y - baseGuides.ascender.y;
+    const baseScale = upm / baseTypoHeight;
+    const asc = Math.round((baseGuides.baseline.y - baseGuides.ascender.y) * baseScale);
+    const dsc = Math.round(-(baseGuides.descender.y - baseGuides.baseline.y) * baseScale);
+    
     const familyName = (document.getElementById('export-filename').value || 'Ngefont Custom').trim();
     
     const font = FontFlux.create({
@@ -1426,29 +1575,40 @@ function generateFontObj() {
     });
     font.info.styleName = 'Regular';
     
-    // .notdef glyph
+    // .notdef glyph — sized to fit the typographic zone
+    const notdefPad = 25; // canvas pixels padding
     font.addGlyph({
-        name: '.notdef', unicode: 0, advanceWidth: Math.round(512*scale),
+        name: '.notdef', unicode: 0, advanceWidth: Math.round((baseTypoHeight + notdefPad*2) * baseScale),
         contours: [[
-            { type: 'M', x: Math.round(50*scale), y: Math.round(asc - 50*scale) },
-            { type: 'L', x: Math.round(462*scale), y: Math.round(asc - 50*scale) },
-            { type: 'L', x: Math.round(462*scale), y: Math.round(asc - 462*scale) },
-            { type: 'L', x: Math.round(50*scale), y: Math.round(asc - 462*scale) }
+            { type: 'M', x: Math.round(notdefPad*baseScale), y: asc },
+            { type: 'L', x: Math.round((baseTypoHeight + notdefPad)*baseScale), y: asc },
+            { type: 'L', x: Math.round((baseTypoHeight + notdefPad)*baseScale), y: dsc },
+            { type: 'L', x: Math.round(notdefPad*baseScale), y: dsc }
         ]]
     });
     
     // space glyph
-    font.addGlyph({ name: 'space', unicode: 32, advanceWidth: 300, contours: [] });
+    font.addGlyph({ name: 'space', unicode: 32, advanceWidth: Math.round(300 * (upm/1000)), contours: [] });
     
     for (const [ch, data] of Object.entries(chars)) {
         if (ch===' ' || !data.processedImageData) continue;
         const px = data.processedImageData.data, W=512;
         let minX=W, maxX=-1;
         for (let y=0;y<512;y++) for(let x=0;x<W;x++) if (px[(y*W+x)*4+3]>128) { if(x<minX)minX=x; if(x>maxX)maxX=x; }
-        let xoff=0, aw=Math.round(512*scale);
-        if (maxX>=minX) { xoff=-minX+25; aw=Math.round((maxX-minX+50)*scale); }
         
-        const contours = buildVectorContours(data.processedImageData, scale, asc, xoff);
+        const g = data.guides || GUIDES;
+        const localTypoHeight = g.descender.y - g.ascender.y;
+        const localScale = upm / localTypoHeight;
+        const leftSideBearing = g.leftBearing.x;
+        const rightSideBearing = 512 - g.rightBearing.x;
+        
+        let xoff=0, aw=Math.round(512 * localScale);
+        if (maxX >= minX) { 
+            xoff = -minX + leftSideBearing; 
+            aw = Math.round((maxX - minX + leftSideBearing + rightSideBearing) * localScale); 
+        }
+        
+        const contours = buildVectorContours(data.processedImageData, localScale, g.baseline.y, xoff);
         font.addGlyph({
             name: ch, unicode: ch.charCodeAt(0), advanceWidth: aw, contours
         });
