@@ -182,11 +182,9 @@ document.getElementById('btn-undo-mobile')?.addEventListener('click', () => undo
 document.getElementById('btn-redo-mobile')?.addEventListener('click', () => redo());
 
 // "More" panel buttons delegate to their desktop equivalents so there's a single
-// source of truth for clear/camera/upload/AI-bg/crop behavior.
+// source of truth for clear/AI-bg/crop behavior.
 [
     ['btn-clear-mobile', 'btn-clear'],
-    ['btn-camera-mobile', 'btn-camera'],
-    ['btn-upload-mobile', 'btn-upload'],
     ['btn-ai-bg-mobile', 'btn-ai-bg'],
     ['btn-autocrop-mobile', 'btn-autocrop'],
 ].forEach(([mobileId, desktopId]) => {
@@ -194,6 +192,18 @@ document.getElementById('btn-redo-mobile')?.addEventListener('click', () => redo
         document.getElementById(desktopId)?.click();
         closeAllDrawers();
     });
+});
+
+// Explicitly bind upload and camera for mobile to preserve User Gesture Context
+// which is required by Safari/iOS to open file picker and camera prompts.
+document.getElementById('btn-upload-mobile')?.addEventListener('click', () => {
+    document.getElementById('file-upload').click();
+    setTimeout(closeAllDrawers, 100);
+});
+
+document.getElementById('btn-camera-mobile')?.addEventListener('click', () => {
+    openCamera();
+    setTimeout(closeAllDrawers, 100);
 });
 
 // ─── Brush Size Sync (desktop slider <-> mobile Settings-drawer slider) ────
@@ -936,13 +946,22 @@ document.getElementById('file-upload').onchange = e => {
 };
 const video = document.getElementById('camera-video'), btnCap = document.getElementById('btn-capture');
 let stream = null;
-document.getElementById('btn-camera').onclick = async () => {
+
+async function openCamera() {
     if (currentTool === 'transform') setTool('draw');
     mainCanvas.hidden=true; transformCanvas.hidden=true; guideCanvas.hidden=true;
     video.hidden=false; btnCap.hidden=false;
-    try { stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); video.srcObject=stream; } 
-    catch(e) { alert('Camera denied'); mainCanvas.hidden=false; transformCanvas.hidden=false; guideCanvas.hidden=false; video.hidden=true; btnCap.hidden=true; }
-};
+    try { 
+        stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}}); 
+        video.srcObject=stream; 
+    } catch(e) { 
+        alert('Camera denied atau tidak tersedia di perangkat ini.'); 
+        mainCanvas.hidden=false; transformCanvas.hidden=false; guideCanvas.hidden=false; 
+        video.hidden=true; btnCap.hidden=true; 
+    }
+}
+
+document.getElementById('btn-camera').onclick = openCamera;
 btnCap.onclick = () => {
     if(!stream) return;
     const ctx = getCharData(activeChar).sourceCanvas.getContext('2d');
@@ -1474,6 +1493,74 @@ document.getElementById('btn-export').onclick = () => {
         btn.disabled = false;
     }, 50);
 };
+
+// ─── Upload to Preview (Supabase) ───────────────────────────────────────────
+document.getElementById('btn-upload-preview')?.addEventListener('click', async () => {
+    const btn = document.getElementById('btn-upload-preview');
+    if (!window.supabase) {
+        alert("Supabase belum dimuat. Pastikan koneksi internet Anda aktif.");
+        return;
+    }
+
+    // ========== UBAH DENGAN KREDENSIAL SUPABASE ANDA ==========
+    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+    if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+        alert("⚠️ Konfigurasi Dibutuhkan!\n\nSilakan edit file src/main.js dan masukkan SUPABASE_URL dan SUPABASE_KEY Anda di baris konfigurasi.");
+        return;
+    }
+
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+    
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px] animate-spin">refresh</span><span class="hidden md:inline">Uploading...</span>';
+    btn.disabled = true;
+
+    try {
+        const font = generateFontObj();
+        const baseName = (document.getElementById('export-filename').value || 'Ngefont').trim();
+        const timestamp = Date.now();
+        const fileName = `${baseName}-${timestamp}.otf`;
+        
+        // Export to OTF for the web preview
+        const otfBuffer = font.export({ format: 'otf' });
+        const blob = new Blob([otfBuffer], { type: 'font/opentype' });
+
+        // 1. Upload ke Storage
+        const { error: uploadError } = await supabase
+            .storage
+            .from('fonts')
+            .upload(fileName, blob, {
+                cacheControl: '3600',
+                upsert: false
+            });
+
+        if (uploadError) throw uploadError;
+
+        // Ambil Public URL
+        const { data: publicUrlData } = supabase.storage.from('fonts').getPublicUrl(fileName);
+        const publicURL = publicUrlData.publicUrl;
+
+        // 2. Insert ke tabel database
+        const { data: insertData, error: insertError } = await supabase
+            .from('font_previews')
+            .insert([{ font_name: baseName, font_url: publicURL }])
+            .select();
+
+        if (insertError) throw insertError;
+
+        // Buka tab baru dengan preview
+        const insertedId = insertData[0].id;
+        window.open(`./preview.html?id=${insertedId}`, '_blank');
+        
+    } catch (e) {
+        console.error("Upload error:", e);
+        alert('Gagal mengupload font ke Preview:\n' + e.message);
+    }
+    
+    btn.innerHTML = '<span class="material-symbols-outlined text-[18px] md:hidden">cloud_upload</span><span class="hidden md:inline">Upload to Preview</span>';
+    btn.disabled = false;
+});
 
 // ─── Bitmap-to-Vector: Rectangle Run-Length Encoding ────────────────────────
 // Converts bitmap glyph to vector contours by downsampling, run-length

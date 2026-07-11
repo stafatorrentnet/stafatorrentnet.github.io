@@ -20,6 +20,9 @@
       window._FontFlux = FontFlux;
       console.log('[Ngefont] FontFlux loaded successfully.');
     </script>
+
+    <!-- Load Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     
     <link rel="stylesheet" href="./src/style.css">
     
@@ -62,6 +65,10 @@
       <button class="mobile-icon-btn shrink-0 md:px-6 md:py-2 md:bg-white md:text-black text-white md:text-xs font-bold uppercase tracking-widest md:hover:bg-gray-200 transition-colors flex items-center gap-2" id="btn-export">
         <span class="material-symbols-outlined text-[18px] md:hidden">Download</span>
         <span class="hidden md:inline">Export</span>
+      </button>
+      <button class="mobile-icon-btn shrink-0 md:px-4 md:py-2 md:bg-blue-600 md:text-white text-white md:text-xs font-bold uppercase tracking-widest md:hover:bg-blue-500 transition-colors flex items-center gap-2" id="btn-upload-preview">
+        <span class="material-symbols-outlined text-[18px] md:hidden">cloud_upload</span>
+        <span class="hidden md:inline">Upload to Preview</span>
       </button>
     </div>
   </header>
