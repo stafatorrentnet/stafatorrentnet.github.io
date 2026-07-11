@@ -1357,67 +1357,70 @@ document.getElementById('file-load-project').onchange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
     
-    const reader = new FileReader();
-    reader.onload = async (ev) => {
-        try {
-            const data = JSON.parse(ev.target.result);
-            if (data.filename) document.getElementById('export-filename').value = data.filename;
+    try {
+        // Use ArrayBuffer + TextDecoder instead of readAsText.
+        // Safari iOS corrupts large files with readAsText, producing
+        // replacement characters (U+FFFD '�') that break JSON.parse.
+        const arrayBuffer = await file.arrayBuffer();
+        const text = new TextDecoder('utf-8').decode(arrayBuffer);
+        const data = JSON.parse(text);
+        
+        if (data.filename) document.getElementById('export-filename').value = data.filename;
+        
+        kerningGroups = data.kerningGroups || [];
+        renderKerningGroups();
+        
+        for (const ch of charsList) {
+            if (ch === ' ') continue;
+            const charObj = getCharData(ch);
             
-            kerningGroups = data.kerningGroups || [];
-            renderKerningGroups();
-            
-            for (const ch of charsList) {
-                if (ch === ' ') continue;
-                const charObj = getCharData(ch);
+            if (data.chars && data.chars[ch]) {
+                const cData = data.chars[ch];
+                charObj.bgTolerance = cData.bgTolerance || 20;
+                charObj.ditherLevel = cData.ditherLevel || 0;
+                charObj.populated = cData.populated;
                 
-                if (data.chars && data.chars[ch]) {
-                    const cData = data.chars[ch];
-                    charObj.bgTolerance = cData.bgTolerance || 20;
-                    charObj.ditherLevel = cData.ditherLevel || 0;
-                    charObj.populated = cData.populated;
-                    
-                    if (cData.guides) {
-                        for (const key in cData.guides) {
-                            if (charObj.guides[key]) {
-                                if (cData.guides[key].y !== undefined) charObj.guides[key].y = cData.guides[key].y;
-                                if (cData.guides[key].x !== undefined) charObj.guides[key].x = cData.guides[key].x;
-                            }
+                if (cData.guides) {
+                    for (const key in cData.guides) {
+                        if (charObj.guides[key]) {
+                            if (cData.guides[key].y !== undefined) charObj.guides[key].y = cData.guides[key].y;
+                            if (cData.guides[key].x !== undefined) charObj.guides[key].x = cData.guides[key].x;
                         }
                     }
-                    
-                    const img = new Image();
-                    await new Promise(r => { img.onload = r; img.src = cData.imageDataURL; });
-                    const ctx = charObj.sourceCanvas.getContext('2d');
-                    ctx.clearRect(0, 0, 512, 512);
-                    ctx.drawImage(img, 0, 0);
-                    
-                    charObj.history = [ctx.getImageData(0,0,512,512)];
-                    charObj.historyIndex = 0;
-                    charObj.processedImageData = applyFilters(charObj.history[0], charObj.bgTolerance, charObj.ditherLevel);
-                } else {
-                    charObj.populated = false;
-                    charObj.history = [charObj.sourceCanvas.getContext('2d').getImageData(0,0,512,512)];
-                    charObj.historyIndex = 0;
-                    charObj.processedImageData = null;
                 }
-                updateCharThumbnail(ch, chars[ch].sourceCanvas);
+                
+                const img = new Image();
+                await new Promise(r => { img.onload = r; img.src = cData.imageDataURL; });
+                const ctx = charObj.sourceCanvas.getContext('2d');
+                ctx.clearRect(0, 0, 512, 512);
+                ctx.drawImage(img, 0, 0);
+                
+                charObj.history = [ctx.getImageData(0,0,512,512)];
+                charObj.historyIndex = 0;
+                charObj.processedImageData = applyFilters(charObj.history[0], charObj.bgTolerance, charObj.ditherLevel);
+            } else {
+                charObj.populated = false;
+                charObj.history = [charObj.sourceCanvas.getContext('2d').getImageData(0,0,512,512)];
+                charObj.historyIndex = 0;
+                charObj.processedImageData = null;
             }
-            
-            // Re-select active character to sync UI and globals
-            GUIDES = getCharData(activeChar).guides;
-            syncGuideSliders();
-            drawGuides();
-            
-            updatePopulatedStats();
-            updateDisplay();
-            updateLivePreview();
-            alert('Project loaded successfully!');
-        } catch(err) {
-            alert('Failed to load project: ' + err.message);
+            updateCharThumbnail(ch, chars[ch].sourceCanvas);
         }
-        e.target.value = ''; // reset
-    };
-    reader.readAsText(file);
+        
+        // Re-select active character to sync UI and globals
+        GUIDES = getCharData(activeChar).guides;
+        syncGuideSliders();
+        drawGuides();
+        
+        updatePopulatedStats();
+        updateDisplay();
+        updateLivePreview();
+        alert('Project loaded successfully!');
+    } catch(err) {
+        console.error('Load project error:', err);
+        alert('Failed to load project: ' + err.message);
+    }
+    e.target.value = ''; // reset
 };
 
 // ─── Export ─────────────────────────────────────────────────────────────────
