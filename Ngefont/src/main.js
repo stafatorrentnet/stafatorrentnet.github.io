@@ -430,7 +430,7 @@ function setTool(tool) {
     });
 
     // Update mobile bottom toolbar active states
-    [['btn-draw-mobile','draw'],['btn-eraser-mobile','erase'],['btn-move-mobile','transform']].forEach(([id, matchTool]) => {
+    [['btn-draw-mobile','draw'],['btn-eraser-mobile','erase'],['btn-move-mobile','transform'],['btn-autocrop-mobile','crop']].forEach(([id, matchTool]) => {
         document.getElementById(id)?.classList.toggle('active', tool === matchTool);
     });
 }
@@ -485,7 +485,7 @@ function centerGlyph() {
 document.getElementById('btn-center')?.addEventListener('click', centerGlyph);
 document.getElementById('btn-center-mobile')?.addEventListener('click', () => { centerGlyph(); closeAllDrawers(); });
 
-// ─── History ────────────────────────────────────────────────────────────────
+// ─── History & Clipboard ───────────────────────────────────────────────────
 function saveState() {
     const data = getCharData(activeChar);
     const idata = data.sourceCanvas.getContext('2d').getImageData(0,0,512,512);
@@ -495,8 +495,39 @@ function saveState() {
     // Trigger debounced auto-save to IndexedDB
     triggerAutoSave();
 }
-function undo() { const d = getCharData(activeChar); if (d.historyIndex > 0) { d.historyIndex--; d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); updateDisplay(); } }
-function redo() { const d = getCharData(activeChar); if (d.historyIndex < d.history.length-1) { d.historyIndex++; d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); updateDisplay(); } }
+function undo() { 
+    if (currentTool === 'transform' || currentTool === 'crop') setTool('draw');
+    const d = getCharData(activeChar); 
+    if (d.historyIndex > 0) { 
+        d.historyIndex--; 
+        d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); 
+        updateDisplay(); 
+    } 
+}
+function redo() { 
+    if (currentTool === 'transform' || currentTool === 'crop') setTool('draw');
+    const d = getCharData(activeChar); 
+    if (d.historyIndex < d.history.length-1) { 
+        d.historyIndex++; 
+        d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); 
+        updateDisplay(); 
+    } 
+}
+
+let clipboardImageData = null;
+function copyGlyph() {
+    const d = getCharData(activeChar);
+    clipboardImageData = d.sourceCanvas.getContext('2d').getImageData(0,0,512,512);
+}
+function pasteGlyph() {
+    if (!clipboardImageData) return;
+    if (currentTool === 'transform' || currentTool === 'crop') setTool('draw');
+    const d = getCharData(activeChar);
+    d.sourceCanvas.getContext('2d').putImageData(clipboardImageData, 0, 0);
+    updateDisplay();
+    saveState();
+}
+
 document.getElementById('btn-undo').onclick = undo;
 document.getElementById('btn-redo').onclick = redo;
 
@@ -636,9 +667,7 @@ function selectChar(c) {
     const mobileLabel = document.getElementById('mobile-sticky-char-label');
     if (mobileLabel) mobileLabel.innerText = c;
     const d = getCharData(c);
-    
-    // Switch to active glyph's guides
-    GUIDES = d.guides;
+    // Removed glyph-specific guides logic for global guides mode.
     syncGuideSliders();
     drawGuides();
     
@@ -744,6 +773,30 @@ let sliderTimer = null;
 function schedUpd() { if(sliderTimer)clearTimeout(sliderTimer); sliderTimer=setTimeout(()=>{sliderTimer=null;updateDisplay();}, 30); }
 document.getElementById('slider-bg').addEventListener('input', e => { getCharData(activeChar).bgTolerance=parseInt(e.target.value); document.getElementById('val-bg').innerText=e.target.value; schedUpd(); });
 document.getElementById('slider-dither').addEventListener('input', e => { getCharData(activeChar).ditherLevel=parseInt(e.target.value); document.getElementById('val-dither').innerText=e.target.value; schedUpd(); });
+
+// ─── Zoom Canvas ────────────────────────────────────────────────────────────
+const canvasZoomContainer = document.getElementById('canvas-zoom-container');
+const zoomSliderDesktop = document.getElementById('zoom-slider');
+const zoomValDesktop = document.getElementById('zoom-val');
+const zoomSliderMobile = document.getElementById('zoom-slider-mobile');
+const zoomValMobile = document.getElementById('zoom-val-mobile');
+
+function updateCanvasZoom(val) {
+    if (canvasZoomContainer) {
+        canvasZoomContainer.style.transform = `scale(${val / 100})`;
+    }
+    if (zoomSliderDesktop && zoomSliderDesktop.value != val) zoomSliderDesktop.value = val;
+    if (zoomValDesktop) zoomValDesktop.innerText = val + '%';
+    if (zoomSliderMobile && zoomSliderMobile.value != val) zoomSliderMobile.value = val;
+    if (zoomValMobile) zoomValMobile.innerText = val + '%';
+}
+
+if (zoomSliderDesktop) {
+    zoomSliderDesktop.addEventListener('input', e => updateCanvasZoom(parseInt(e.target.value)));
+}
+if (zoomSliderMobile) {
+    zoomSliderMobile.addEventListener('input', e => updateCanvasZoom(parseInt(e.target.value)));
+}
 
 // ─── Bounding Box & Transform Tool ──────────────────────────────────────────
 let tfState = null; // { cx, cy, w, h, angle, scale, init }
@@ -1133,6 +1186,14 @@ window.addEventListener('keydown', (e) => {
             } else {
                 undo();
             }
+        }
+        if (e.key.toLowerCase() === 'c') {
+            e.preventDefault();
+            copyGlyph();
+        }
+        if (e.key.toLowerCase() === 'v') {
+            e.preventDefault();
+            pasteGlyph();
         }
     }
 });
@@ -1813,7 +1874,7 @@ function generateFontObj() {
     const FontFlux = window._FontFlux;
     const upm = 1000;
     
-    const baseGuides = (chars['A'] && chars['A'].populated) ? chars['A'].guides : GUIDES;
+    const baseGuides = GUIDES;
     const baseTypoHeight = baseGuides.descender.y - baseGuides.ascender.y;
     const baseScale = upm / baseTypoHeight;
     const asc = Math.round((baseGuides.baseline.y - baseGuides.ascender.y) * baseScale);
@@ -1850,7 +1911,7 @@ function generateFontObj() {
         let minX=W, maxX=-1;
         for (let y=0;y<512;y++) for(let x=0;x<W;x++) if (px[(y*W+x)*4+3]>128) { if(x<minX)minX=x; if(x>maxX)maxX=x; }
         
-        const g = data.guides || GUIDES;
+        const g = GUIDES;
         const localTypoHeight = g.descender.y - g.ascender.y;
         const localScale = upm / localTypoHeight;
         const leftSideBearing = g.leftBearing.x;
@@ -1979,46 +2040,29 @@ initApp();
 // ─── Dynamic Title Animation ────────────────────────────────────────────────
 const dynamicTitle = document.getElementById('dynamic-title');
 if (dynamicTitle) {
-    // Update title periodically with project name if set
-    setInterval(() => {
-        if (projectName && dynamicTitle.getAttribute('data-base') !== projectName) {
-            dynamicTitle.setAttribute('data-base', projectName);
-            dynamicTitle.title = projectName;
-            
-            // Re-split into spans
-            dynamicTitle.innerHTML = '';
-            spans.length = 0; // Clear array
-            for (const char of projectName) {
-                const span = document.createElement('span');
-                span.textContent = char;
-                span.style.display = 'inline-block';
-                span.style.transition = 'all 0.2s ease';
-                dynamicTitle.appendChild(span);
-                spans.push({
-                    el: span,
-                    char: char
-                });
-            }
-        }
-    }, 1000);
-
-    const text = dynamicTitle.textContent;
-
-    dynamicTitle.innerHTML = '';
     const spans = [];
     
-    // Split into spans
-    for (const char of text) {
-        const span = document.createElement('span');
-        span.textContent = char;
-        span.style.display = 'inline-block';
-        span.style.transition = 'all 0.2s ease';
-        dynamicTitle.appendChild(span);
-        spans.push({
-            el: span,
-            char: char
-        });
+    function buildTitleSpans(text) {
+        dynamicTitle.innerHTML = '';
+        spans.length = 0;
+        for (const char of text) {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.style.display = 'inline-block';
+            span.style.transition = 'all 0.2s ease';
+            dynamicTitle.appendChild(span);
+            spans.push({ el: span, char: char });
+        }
     }
+    
+    // Initial setup
+    buildTitleSpans('Ngefont!');
+    
+    let titleToggle = false;
+    setInterval(() => {
+        titleToggle = !titleToggle;
+        buildTitleSpans(titleToggle ? 'Font Object!' : 'Ngefont!');
+    }, 4000);
 
     const fonts = ['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'];
     const weights = ['300', '400', '600', '800', '900'];

@@ -3,15 +3,15 @@ const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_K9-ejUbEbzWlw5o2EhdwcQ_3_8seFrP';
 
 const sentences = [
-    "The quick brown fox jumps over the lazy dog.",
-    "Jived fox nymph grabs quick waltz.",
-    "Glib jocks quiz nymph to vex dwarf.",
-    "Sphinx of black quartz, judge my vow.",
-    "How vexingly quick daft zebras jump!",
-    "The five boxing wizards jump quickly.",
-    "Pack my box with five dozen liquor jugs.",
-    "Ngefont makes creating your own typefaces incredibly easy.",
-    "Desain huruf digital kini ada di ujung jari Anda."
+    "The quick brown fox jumps over the lazy dog! 1234567890",
+    "Jived fox nymph grabs quick waltz @ $5.99.",
+    "Glib jocks quiz nymph to vex dwarf (90% + 10%).",
+    "Sphinx of black quartz, judge my vow: #A1 & #B2.",
+    "How vexingly quick daft zebras jump! [1978-2026]",
+    "The 5 boxing wizards jump quickly * 3 = 15.",
+    "Pack my box with 12 dozen liquor jugs, please!",
+    "Ngefont makes creating your own typefaces 100% easy!!!",
+    "Desain huruf digital {A-Z, 0-9, @#$} kini di ujung jari Anda."
 ];
 
 function getRandomSentence() {
@@ -170,22 +170,33 @@ loadFonts();
 // ─── Dynamic Title Animation ────────────────────────────────────────────────
 const dynamicTitle = document.getElementById('dynamic-title');
 if (dynamicTitle) {
-    const text = dynamicTitle.textContent;
-    dynamicTitle.innerHTML = '';
     const spans = [];
     
-    // Split into spans
-    for (const char of text) {
-        const span = document.createElement('span');
-        span.textContent = char;
-        span.style.display = 'inline-block';
-        span.style.transition = 'all 0.2s ease';
-        dynamicTitle.appendChild(span);
-        spans.push({
-            el: span,
-            char: char
-        });
+    function buildTitleSpans(text) {
+        dynamicTitle.innerHTML = '';
+        spans.length = 0;
+        for (const char of text) {
+            const span = document.createElement('span');
+            span.textContent = char;
+            span.style.display = 'inline-block';
+            span.style.transition = 'all 0.2s ease';
+            dynamicTitle.appendChild(span);
+            spans.push({
+                el: span,
+                char: char
+            });
+        }
     }
+    
+    // Initial build
+    buildTitleSpans('Ngefont!');
+    
+    // Toggle title text every 4 seconds
+    let titleToggle = false;
+    setInterval(() => {
+        titleToggle = !titleToggle;
+        buildTitleSpans(titleToggle ? 'Font Object!' : 'Ngefont!');
+    }, 4000);
 
     const titleFonts = ['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'];
     const titleWeights = ['300', '400', '600', '800', '900'];

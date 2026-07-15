@@ -125,17 +125,23 @@
           <label class="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Brush Size <span id="brush-size-val" class="text-white">15</span></label>
           <input type="range" id="brush-size" min="1" max="100" value="15" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
         </div>
+
+        <!-- Zoom Slider -->
+        <div class="bg-[#1a1a1a] border border-white/10 p-2 text-center hidden md:block mt-2">
+          <label class="text-[9px] text-gray-500 uppercase tracking-widest block mb-1">Zoom <span id="zoom-val" class="text-white">100%</span></label>
+          <input type="range" id="zoom-slider" min="50" max="300" value="100" class="w-full accent-white bg-white/10 h-1 rounded-full appearance-none">
+        </div>
       </div>
 
       <!-- Canvas area -->
-      <div class="flex-1 flex flex-col items-center justify-center px-2 py-2 md:p-12 min-h-0">
-        <div class="text-center mb-1 md:mb-6 shrink-0">
-          <span class="text-[10px] text-gray-500 uppercase tracking-widest">Editing Glyph <span id="active-char-label" class="text-white font-bold text-lg ml-2">A</span></span>
+      <div class="flex-1 flex flex-col items-center justify-center px-2 py-2 md:p-12 min-h-0 overflow-auto relative">
+        <div class="text-center mb-1 md:mb-6 shrink-0 sticky top-0 z-50">
+          <span class="text-[10px] text-gray-500 uppercase tracking-widest bg-black/50 backdrop-blur px-3 py-1 rounded-full">Editing Glyph <span id="active-char-label" class="text-white font-bold text-lg ml-1">A</span></span>
         </div>
         
         <!-- Canvas Stack -->
         <!-- Membatasi height & width agar pas pada setengah layar tanpa overflow -->
-        <div class="canvas-wrapper w-full max-w-[min(85vw,40vh)] md:max-w-none md:w-auto md:h-full md:max-h-[70vh] aspect-square relative border-2 border-white/20 shadow-2xl bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] bg-[size:20px_20px] mx-auto">
+        <div id="canvas-zoom-container" class="canvas-wrapper w-full max-w-[min(85vw,40vh)] md:max-w-none md:w-auto md:h-full md:max-h-[70vh] aspect-square relative border-2 border-white/20 shadow-2xl bg-[radial-gradient(#1a1a1a_1px,transparent_1px)] bg-[size:20px_20px] mx-auto" style="transform-origin: center center; transition: transform 0.15s ease-out;">
           <canvas id="main-canvas" width="512" height="512" class="absolute inset-0 w-full h-full z-0" style="cursor:crosshair;"></canvas>
           <canvas id="guide-canvas" width="512" height="512" class="absolute inset-0 w-full h-full z-10 pointer-events-none"></canvas>
           <canvas id="transform-overlay" width="1536" height="1536" class="absolute z-20 pointer-events-none" style="width: 300%; height: 300%; top: -100%; left: -100%;"></canvas>
@@ -371,6 +377,12 @@
         <span class="material-symbols-outlined text-[22px]">folder_open</span>
         <span class="text-[9px] mt-1">Upload</span>
       </button>
+      <!-- Zoom Mobile controls -->
+      <div class="col-span-3 flex items-center gap-2 px-3 py-2 w-full mt-2 border-t border-white/10 pt-4">
+        <label class="text-[10px] text-gray-500 uppercase tracking-widest w-12">Zoom</label>
+        <input type="range" id="zoom-slider-mobile" min="50" max="300" value="100" class="flex-1 accent-white bg-white/10 h-1 rounded-full appearance-none">
+        <span id="zoom-val-mobile" class="text-[10px] text-white w-8 text-right font-mono">100%</span>
+      </div>
       <button id="btn-center-mobile" class="mobile-more-item">
         <span class="material-symbols-outlined text-[22px]">center_focus_strong</span>
         <span class="text-[9px] mt-1">Center</span>
