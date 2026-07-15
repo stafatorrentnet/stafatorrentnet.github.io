@@ -17,66 +17,61 @@
     <link rel="stylesheet" href="./src/style.css">
     <style>
         /* Hide scrollbar for cleaner look */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #121212; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #333; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #555; }
         
-        .font-preview-item {
-            animation: fadeIn 0.5s ease forwards;
-            opacity: 0;
-            transform: translateY(10px);
-        }
-        @keyframes fadeIn {
-            to { opacity: 1; transform: translateY(0); }
+        /* Mobile-optimized touch targets */
+        @media (max-width: 640px) {
+            input[type="range"] {
+                height: 24px; /* Larger touch target */
+            }
         }
     </style>
 </head>
 <body class="flex flex-col h-full w-full bg-[#0F0F0F] text-gray-200 font-sans overflow-x-hidden">
 
-  <!-- Header -->
-  <header class="h-16 flex items-center px-4 md:px-8 border-b border-white/10 bg-[#121212] z-40 relative shrink-0">
-    <div class="flex items-center gap-3 min-w-0">
-      <a href="/" id="dynamic-title" class="text-xl md:text-2xl tracking-tighter hover:text-white transition-colors">Ngefont!</a>
-      <span class="text-xs px-2 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/20 uppercase tracking-widest ml-2">Preview</span>
+  <!-- Fixed Header -->
+  <header class="fixed top-0 left-0 w-full h-12 md:h-14 flex items-center justify-between px-3 md:px-8 border-b border-white/10 bg-[#0F0F0F]/90 backdrop-blur-md z-50 shrink-0">
+    <div class="flex items-center gap-2 min-w-0">
+      <a href="/" id="dynamic-title" class="text-lg md:text-2xl tracking-tighter hover:text-white transition-colors">Ngefont!</a>
+      <span class="text-[8px] px-1.5 py-0.5 rounded-full bg-white/5 text-gray-500 border border-white/10 uppercase tracking-[0.15em] hidden sm:inline">Preview</span>
+    </div>
+    <div class="flex items-center gap-2 md:gap-5">
+      <label class="text-[9px] uppercase tracking-[0.15em] text-gray-500 hidden md:block">Size</label>
+      <input type="range" id="size-slider" min="16" max="200" value="48" class="w-20 md:w-36 accent-white bg-white/10 h-1 rounded-full appearance-none cursor-pointer">
+      <span id="size-label" class="text-[10px] md:text-[11px] text-white font-mono w-9 md:w-10 text-right">48px</span>
     </div>
   </header>
 
-  <!-- Main Content -->
-  <main class="flex-1 overflow-y-auto w-full max-w-5xl mx-auto px-4 py-8 md:py-12">
+  <!-- Main Content (full-width, scrollable, padded for header/footer) -->
+  <main class="flex-1 overflow-y-auto w-full pt-12 md:pt-14 pb-14 md:pb-16">
     
-    <!-- Top Controls Section -->
-    <div class="mb-12 flex flex-wrap items-center justify-between gap-4 bg-[#1a1a1a] p-4 border border-white/5 rounded-xl shadow-lg">
-      <div class="flex items-center gap-4">
-        <label class="text-[10px] uppercase tracking-widest text-gray-400">Size</label>
-        <input type="range" id="size-slider" min="24" max="160" value="64" class="w-32 md:w-48 accent-white bg-white/10 h-1 rounded-full appearance-none">
-        <span id="size-label" class="text-xs text-white font-mono w-10 text-right">64px</span>
-      </div>
-      <button id="btn-randomize" class="px-4 py-2 bg-white/5 hover:bg-white/10 border border-white/10 rounded text-xs uppercase tracking-widest transition-colors flex items-center gap-2 cursor-pointer">
-        <span class="material-symbols-outlined text-[16px]">shuffle</span>
-        Random Text
-      </button>
-    </div>
-
-    <!-- Font List -->
-    <div id="loading-indicator" class="flex flex-col items-center justify-center py-20 text-gray-500">
+    <!-- Loading Indicator -->
+    <div id="loading-indicator" class="flex flex-col items-center justify-center py-32 text-gray-500">
         <span class="material-symbols-outlined text-[48px] animate-spin mb-4">refresh</span>
-        <p class="text-xs uppercase tracking-widest">Loading Fonts...</p>
+        <p class="text-[10px] uppercase tracking-[0.2em]">Loading Fonts...</p>
     </div>
     
-    <div id="font-list" class="space-y-16">
+    <!-- Font List (full-width, no max-width) -->
+    <div id="font-list">
       <!-- Font previews will be injected here -->
     </div>
 
   </main>
 
-  <!-- Sticky Bottom Custom Text Bar -->
-  <div class="fixed bottom-0 left-0 w-full p-4 border-t border-white/10 bg-[#0F0F0F]/80 backdrop-blur-md z-50">
-      <div class="max-w-5xl mx-auto relative flex items-center">
-          <input type="text" id="preview-text" class="w-full bg-[#1a1a1a] border border-white/10 text-white text-sm md:text-base pl-4 pr-12 py-3 rounded-xl outline-none focus:border-white/40 transition-colors placeholder-gray-500 shadow-lg" placeholder="Ketik teks Anda sendiri di sini..." autocomplete="off">
-          <span class="material-symbols-outlined absolute right-4 text-gray-500 pointer-events-none">edit</span>
+  <!-- Fixed Footer -->
+  <footer class="fixed bottom-0 left-0 w-full h-12 md:h-14 flex items-center gap-2 md:gap-3 px-3 md:px-6 border-t border-white/10 bg-[#0F0F0F]/90 backdrop-blur-md z-50" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+      <button id="btn-randomize" class="shrink-0 h-8 md:h-9 w-8 md:w-auto md:px-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[10px] uppercase tracking-[0.15em] transition-colors flex items-center justify-center gap-2 cursor-pointer text-gray-300 hover:text-white">
+        <span class="material-symbols-outlined text-[16px]">shuffle</span>
+        <span class="hidden md:inline">Random</span>
+      </button>
+      <div class="flex-1 relative">
+          <input type="text" id="preview-text" class="w-full bg-white/5 border border-white/10 text-white text-[13px] md:text-sm pl-3 md:pl-4 pr-9 md:pr-10 py-1.5 md:py-2 rounded-lg outline-none focus:border-white/30 transition-colors placeholder-gray-600" placeholder="Ketik teks kustom..." autocomplete="off">
+          <span class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-gray-600 text-[16px] md:text-[18px] pointer-events-none">edit</span>
       </div>
-  </div>
+  </footer>
 
   <script src="./src/preview.js"></script>
 </body>
