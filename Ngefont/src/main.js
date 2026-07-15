@@ -59,6 +59,7 @@ async function deleteFromIDB(key) {
 let autoSaveEnabled = true;
 let autoSaveTimer = null;
 let projectName = '';
+let authorName = '';
 let projectInitialized = false; // Blocks editor until welcome screen is completed
 
 function updateAutoSaveUI() {
@@ -118,6 +119,7 @@ async function performAutoSave() {
         kerningGroups: typeof kerningGroups !== 'undefined' ? kerningGroups : [],
         filename: document.getElementById('export-filename')?.value || projectName || 'Ngefont',
         projectName: projectName,
+        authorName: authorName,
         savedAt: new Date().toISOString()
     };
     
@@ -1497,6 +1499,7 @@ document.getElementById('btn-save-project').onclick = () => {
 async function loadProjectData(data) {
     if (data.filename) document.getElementById('export-filename').value = data.filename;
     if (data.projectName) projectName = data.projectName;
+    if (data.authorName) authorName = data.authorName;
     
     kerningGroups = data.kerningGroups || [];
     renderKerningGroups();
@@ -1704,7 +1707,11 @@ document.getElementById('btn-upload-preview')?.addEventListener('click', async (
         // 2. Insert ke tabel database
         const { data: insertData, error: insertError } = await supabase
             .from('font_previews')
-            .insert([{ font_name: baseName, font_url: publicURL }])
+            .insert([{ 
+                font_name: baseName, 
+                author_name: authorName || 'Unknown',
+                font_url: publicURL 
+            }])
             .select();
 
         if (insertError) throw insertError;
@@ -1920,13 +1927,17 @@ async function initApp() {
     }
     
     // New Project flow
+    const welcomeAuthorName = document.getElementById('welcome-author-name');
+    
     document.getElementById('btn-new-project').onclick = () => {
         const name = welcomeProjectName.value.trim();
+        const author = welcomeAuthorName ? welcomeAuthorName.value.trim() : '';
         if (!name) {
             welcomeNameError.classList.remove('hidden');
             return;
         }
         projectName = name;
+        authorName = author;
         document.getElementById('export-filename').value = name;
         
         projectInitialized = true;

@@ -28,6 +28,8 @@ const loadingIndicator = document.getElementById('loading-indicator');
 // Initial text
 previewText.value = getRandomSentence();
 
+let isCustomText = false;
+
 // Controls
 sizeSlider.addEventListener('input', (e) => {
     sizeLabel.textContent = `${e.target.value}px`;
@@ -37,18 +39,36 @@ sizeSlider.addEventListener('input', (e) => {
 });
 
 btnRandomize.addEventListener('click', () => {
+    isCustomText = false; // reset custom flag
     previewText.value = getRandomSentence();
     updatePreviewTexts();
 });
 
-previewText.addEventListener('input', updatePreviewTexts);
+previewText.addEventListener('input', () => {
+    isCustomText = true;
+    updatePreviewTexts();
+});
 
 function updatePreviewTexts() {
     const text = previewText.value || ' ';
     document.querySelectorAll('.font-preview-item .preview-text-render').forEach(el => {
         el.textContent = text;
+        // Pause marquee if user types custom text
+        if (isCustomText && previewText.value.trim().length > 0) {
+            el.classList.add('paused');
+        } else {
+            el.classList.remove('paused');
+        }
     });
 }
+
+// Random text rotation every 5 seconds
+setInterval(() => {
+    if (!isCustomText) {
+        previewText.value = getRandomSentence();
+        updatePreviewTexts();
+    }
+}, 5000);
 
 // Supabase fetching
 async function loadFonts() {
@@ -109,10 +129,12 @@ async function loadFonts() {
             item.className = `font-preview-item ${isHighlighted ? 'ring-2 ring-blue-500/50 p-4 rounded-xl bg-blue-500/5' : ''}`;
             item.style.animationDelay = `${i * 0.1}s`;
             
+            const authorText = font.author_name && font.author_name !== 'Unknown' ? `<span class="text-xs text-gray-400 font-normal ml-2">by ${font.author_name}</span>` : '';
+            
             item.innerHTML = `
                 <div class="flex justify-between items-end mb-4 border-b border-white/5 pb-2">
                     <div>
-                        <h2 class="text-lg font-bold text-white tracking-tight">${font.font_name}</h2>
+                        <h2 class="text-lg font-bold text-white tracking-tight">${font.font_name}${authorText}</h2>
                         <span class="text-[10px] uppercase tracking-widest text-gray-500">Uploaded ${date}</span>
                     </div>
                     <a href="${font.font_url}" download="${font.font_name}.otf" class="text-xs text-blue-400 hover:text-blue-300 transition-colors uppercase tracking-widest flex items-center gap-1">
@@ -120,8 +142,10 @@ async function loadFonts() {
                         Download
                     </a>
                 </div>
-                <div class="preview-text-render break-words" style="font-family: '${fontName}', sans-serif; font-size: ${sizeSlider.value}px; line-height: 1.2;">
-                    ${previewText.value}
+                <div class="marquee-container" style="font-family: '${fontName}', sans-serif; font-size: ${sizeSlider.value}px; line-height: 1.2;">
+                    <div class="marquee-text preview-text-render">
+                        ${previewText.value}
+                    </div>
                 </div>
             `;
             
