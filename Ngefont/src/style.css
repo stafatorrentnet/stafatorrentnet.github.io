@@ -310,7 +310,7 @@ input[type="range"]::-moz-range-thumb {
 }
 .marquee-track {
     display: inline-flex;
-    animation: marquee-scroll 40s linear infinite;
+    animation: marquee-scroll 80s linear infinite;
     will-change: transform;
 }
 .marquee-track .marquee-segment {
@@ -413,7 +413,7 @@ input[type="range"]::-moz-range-thumb {
     
     /* Faster marquee on smaller screens (less distance to cover) */
     .marquee-track {
-        animation-duration: 25s;
+        animation-duration: 50s;
     }
 }
 
