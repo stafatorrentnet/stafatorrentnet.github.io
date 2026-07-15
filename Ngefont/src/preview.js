@@ -1,6 +1,6 @@
 // ========== UBAH DENGAN KREDENSIAL SUPABASE ANDA ==========
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co/rest/v1/';
+const SUPABASE_KEY = 'sb_publishable_K9-ejUbEbzWlw5o2EhdwcQ_3_8seFrP';
 
 const sentences = [
     "The quick brown fox jumps over the lazy dog.",

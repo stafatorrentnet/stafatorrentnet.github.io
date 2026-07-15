@@ -1,4 +1,143 @@
+// ─── IndexedDB Auto-Backup System ───────────────────────────────────────────
+const NGEFONT_DB_NAME = 'NgefontAutoBackup';
+const NGEFONT_DB_VERSION = 1;
+const NGEFONT_STORE = 'backups';
+let _ngefontDB = null;
+
+function openNgefontDB() {
+    return new Promise((resolve, reject) => {
+        if (_ngefontDB) { resolve(_ngefontDB); return; }
+        const req = indexedDB.open(NGEFONT_DB_NAME, NGEFONT_DB_VERSION);
+        req.onupgradeneeded = (e) => {
+            const db = e.target.result;
+            if (!db.objectStoreNames.contains(NGEFONT_STORE)) {
+                db.createObjectStore(NGEFONT_STORE);
+            }
+        };
+        req.onsuccess = (e) => { _ngefontDB = e.target.result; resolve(_ngefontDB); };
+        req.onerror = (e) => { console.error('IndexedDB open error:', e); reject(e); };
+    });
+}
+
+async function saveToIDB(key, value) {
+    try {
+        const db = await openNgefontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(NGEFONT_STORE, 'readwrite');
+            tx.objectStore(NGEFONT_STORE).put(value, key);
+            tx.oncomplete = resolve;
+            tx.onerror = (e) => { console.error('IDB save error:', e); reject(e); };
+        });
+    } catch(e) { console.error('saveToIDB failed:', e); }
+}
+
+async function loadFromIDB(key) {
+    try {
+        const db = await openNgefontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(NGEFONT_STORE, 'readonly');
+            const req = tx.objectStore(NGEFONT_STORE).get(key);
+            req.onsuccess = () => resolve(req.result);
+            req.onerror = (e) => { console.error('IDB load error:', e); reject(e); };
+        });
+    } catch(e) { console.error('loadFromIDB failed:', e); return null; }
+}
+
+async function deleteFromIDB(key) {
+    try {
+        const db = await openNgefontDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(NGEFONT_STORE, 'readwrite');
+            tx.objectStore(NGEFONT_STORE).delete(key);
+            tx.oncomplete = resolve;
+            tx.onerror = (e) => reject(e);
+        });
+    } catch(e) { console.error('deleteFromIDB failed:', e); }
+}
+
+// ─── Auto-Save State ────────────────────────────────────────────────────────
+let autoSaveEnabled = true;
+let autoSaveTimer = null;
+let projectName = '';
+let projectInitialized = false; // Blocks editor until welcome screen is completed
+
+function updateAutoSaveUI() {
+    const icon = document.getElementById('auto-save-icon');
+    const label = document.getElementById('auto-save-label');
+    const btn = document.getElementById('btn-auto-save-toggle');
+    if (icon) icon.textContent = autoSaveEnabled ? 'cloud_done' : 'cloud_off';
+    if (label) label.textContent = autoSaveEnabled ? 'Auto-Save ON' : 'Auto-Save OFF';
+    if (btn) btn.style.opacity = autoSaveEnabled ? '1' : '0.5';
+}
+
+document.getElementById('btn-auto-save-toggle')?.addEventListener('click', () => {
+    autoSaveEnabled = !autoSaveEnabled;
+    updateAutoSaveUI();
+    localStorage.setItem('ngefont_autosave_enabled', autoSaveEnabled ? '1' : '0');
+    if (!autoSaveEnabled && autoSaveTimer) {
+        clearTimeout(autoSaveTimer);
+        autoSaveTimer = null;
+    }
+});
+
+// Restore preference
+if (localStorage.getItem('ngefont_autosave_enabled') === '0') {
+    autoSaveEnabled = false;
+}
+updateAutoSaveUI();
+
+function showAutoSaveStatus() {
+    const el = document.getElementById('auto-save-status');
+    if (!el) return;
+    el.style.display = 'block';
+    el.classList.remove('auto-save-flash');
+    // Force reflow to restart animation
+    void el.offsetWidth;
+    el.classList.add('auto-save-flash');
+    setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+
+// Called by the existing saveState() — debounced 3 seconds
+function triggerAutoSave() {
+    if (!autoSaveEnabled || !projectInitialized) return;
+    if (autoSaveTimer) clearTimeout(autoSaveTimer);
+    autoSaveTimer = setTimeout(async () => {
+        autoSaveTimer = null;
+        try {
+            await performAutoSave();
+            showAutoSaveStatus();
+        } catch(e) {
+            console.error('Auto-save failed:', e);
+        }
+    }, 3000);
+}
+
+async function performAutoSave() {
+    const projectData = {
+        chars: {},
+        kerningGroups: typeof kerningGroups !== 'undefined' ? kerningGroups : [],
+        filename: document.getElementById('export-filename')?.value || projectName || 'Ngefont',
+        projectName: projectName,
+        savedAt: new Date().toISOString()
+    };
+    
+    for (const [ch, data] of Object.entries(chars)) {
+        if (data.populated) {
+            projectData.chars[ch] = {
+                imageDataURL: data.sourceCanvas.toDataURL('image/png'),
+                bgTolerance: data.bgTolerance,
+                ditherLevel: data.ditherLevel,
+                populated: true,
+                guides: data.guides
+            };
+        }
+    }
+    
+    await saveToIDB('autosave', projectData);
+}
+
 // ─── Guides ──────────────────────────────────────────────────────────────────
+
 function getDefaultGuides() {
     return JSON.parse(JSON.stringify({
         ascender:     { y: 31,  label: 'Ascender',   color: 'rgba(255,80,80,0.8)' },
@@ -351,6 +490,8 @@ function saveState() {
     data.history = data.history.slice(0, data.historyIndex + 1);
     data.history.push(idata);
     if (data.history.length > 20) data.history.shift(); else data.historyIndex++;
+    // Trigger debounced auto-save to IndexedDB
+    triggerAutoSave();
 }
 function undo() { const d = getCharData(activeChar); if (d.historyIndex > 0) { d.historyIndex--; d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); updateDisplay(); } }
 function redo() { const d = getCharData(activeChar); if (d.historyIndex < d.history.length-1) { d.historyIndex++; d.sourceCanvas.getContext('2d').putImageData(d.history[d.historyIndex],0,0); updateDisplay(); } }
@@ -1352,6 +1493,61 @@ document.getElementById('btn-save-project').onclick = () => {
     setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
+// Shared function to load project data into the editor (reused by load file, welcome restore, etc.)
+async function loadProjectData(data) {
+    if (data.filename) document.getElementById('export-filename').value = data.filename;
+    if (data.projectName) projectName = data.projectName;
+    
+    kerningGroups = data.kerningGroups || [];
+    renderKerningGroups();
+    
+    for (const ch of charsList) {
+        if (ch === ' ') continue;
+        const charObj = getCharData(ch);
+        
+        if (data.chars && data.chars[ch]) {
+            const cData = data.chars[ch];
+            charObj.bgTolerance = cData.bgTolerance || 20;
+            charObj.ditherLevel = cData.ditherLevel || 0;
+            charObj.populated = cData.populated;
+            
+            if (cData.guides) {
+                for (const key in cData.guides) {
+                    if (charObj.guides[key]) {
+                        if (cData.guides[key].y !== undefined) charObj.guides[key].y = cData.guides[key].y;
+                        if (cData.guides[key].x !== undefined) charObj.guides[key].x = cData.guides[key].x;
+                    }
+                }
+            }
+            
+            const img = new Image();
+            await new Promise(r => { img.onload = r; img.src = cData.imageDataURL; });
+            const ctx = charObj.sourceCanvas.getContext('2d');
+            ctx.clearRect(0, 0, 512, 512);
+            ctx.drawImage(img, 0, 0);
+            
+            charObj.history = [ctx.getImageData(0,0,512,512)];
+            charObj.historyIndex = 0;
+            charObj.processedImageData = applyFilters(charObj.history[0], charObj.bgTolerance, charObj.ditherLevel);
+        } else {
+            charObj.populated = false;
+            charObj.history = [charObj.sourceCanvas.getContext('2d').getImageData(0,0,512,512)];
+            charObj.historyIndex = 0;
+            charObj.processedImageData = null;
+        }
+        updateCharThumbnail(ch, chars[ch].sourceCanvas);
+    }
+    
+    // Re-select active character to sync UI and globals
+    GUIDES = getCharData(activeChar).guides;
+    syncGuideSliders();
+    drawGuides();
+    
+    updatePopulatedStats();
+    updateDisplay();
+    updateLivePreview();
+}
+
 document.getElementById('btn-load-project').onclick = () => document.getElementById('file-load-project').click();
 document.getElementById('file-load-project').onchange = async (e) => {
     const file = e.target.files[0];
@@ -1365,56 +1561,17 @@ document.getElementById('file-load-project').onchange = async (e) => {
         const text = new TextDecoder('utf-8').decode(arrayBuffer);
         const data = JSON.parse(text);
         
-        if (data.filename) document.getElementById('export-filename').value = data.filename;
+        await loadProjectData(data);
         
-        kerningGroups = data.kerningGroups || [];
-        renderKerningGroups();
+        // Set project name from filename if not already set
+        if (!projectName && data.filename) projectName = data.filename;
         
-        for (const ch of charsList) {
-            if (ch === ' ') continue;
-            const charObj = getCharData(ch);
-            
-            if (data.chars && data.chars[ch]) {
-                const cData = data.chars[ch];
-                charObj.bgTolerance = cData.bgTolerance || 20;
-                charObj.ditherLevel = cData.ditherLevel || 0;
-                charObj.populated = cData.populated;
-                
-                if (cData.guides) {
-                    for (const key in cData.guides) {
-                        if (charObj.guides[key]) {
-                            if (cData.guides[key].y !== undefined) charObj.guides[key].y = cData.guides[key].y;
-                            if (cData.guides[key].x !== undefined) charObj.guides[key].x = cData.guides[key].x;
-                        }
-                    }
-                }
-                
-                const img = new Image();
-                await new Promise(r => { img.onload = r; img.src = cData.imageDataURL; });
-                const ctx = charObj.sourceCanvas.getContext('2d');
-                ctx.clearRect(0, 0, 512, 512);
-                ctx.drawImage(img, 0, 0);
-                
-                charObj.history = [ctx.getImageData(0,0,512,512)];
-                charObj.historyIndex = 0;
-                charObj.processedImageData = applyFilters(charObj.history[0], charObj.bgTolerance, charObj.ditherLevel);
-            } else {
-                charObj.populated = false;
-                charObj.history = [charObj.sourceCanvas.getContext('2d').getImageData(0,0,512,512)];
-                charObj.historyIndex = 0;
-                charObj.processedImageData = null;
-            }
-            updateCharThumbnail(ch, chars[ch].sourceCanvas);
+        // If loaded from header, mark project as initialized and close welcome screen
+        if (!projectInitialized) {
+            projectInitialized = true;
+            dismissWelcomeScreen();
         }
         
-        // Re-select active character to sync UI and globals
-        GUIDES = getCharData(activeChar).guides;
-        syncGuideSliders();
-        drawGuides();
-        
-        updatePopulatedStats();
-        updateDisplay();
-        updateLivePreview();
         alert('Project loaded successfully!');
     } catch(err) {
         console.error('Load project error:', err);
@@ -1506,8 +1663,8 @@ document.getElementById('btn-upload-preview')?.addEventListener('click', async (
     }
 
     // ========== UBAH DENGAN KREDENSIAL SUPABASE ANDA ==========
-    const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-    const SUPABASE_KEY = 'YOUR_SUPABASE_ANON_KEY';
+    const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co/rest/v1/';
+    const SUPABASE_KEY = 'sb_publishable_K9-ejUbEbzWlw5o2EhdwcQ_3_8seFrP';
 
     if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
         alert("⚠️ Konfigurasi Dibutuhkan!\n\nSilakan edit file src/main.js dan masukkan SUPABASE_URL dan SUPABASE_KEY Anda di baris konfigurasi.");
@@ -1723,14 +1880,119 @@ function generateFontObj() {
     return font;
 }
 
-// ─── Init ───────────────────────────────────────────────────────────────────
-selectChar('A');
-updatePopulatedStats();
+// ─── Welcome Screen & Init ──────────────────────────────────────────────────
+const welcomeScreen = document.getElementById('welcome-screen');
+const welcomeProjectName = document.getElementById('welcome-project-name');
+const welcomeNameError = document.getElementById('welcome-name-error');
+const welcomeRestoreBanner = document.getElementById('welcome-restore-banner');
+const welcomeRestoreInfo = document.getElementById('welcome-restore-info');
+
+function dismissWelcomeScreen() {
+    if (welcomeScreen) {
+        welcomeScreen.classList.add('closing');
+        setTimeout(() => welcomeScreen.style.display = 'none', 400); // Wait for animation
+    }
+}
+
+async function initApp() {
+    selectChar('A');
+    updatePopulatedStats();
+    
+    // Check for auto-backup
+    const backup = await loadFromIDB('autosave');
+    if (backup && backup.chars) {
+        if (welcomeRestoreBanner) welcomeRestoreBanner.classList.remove('hidden');
+        if (welcomeRestoreInfo) {
+            const date = new Date(backup.savedAt);
+            welcomeRestoreInfo.textContent = `Sesi terakhir tersimpan: ${date.toLocaleString()}`;
+        }
+        
+        document.getElementById('btn-restore-backup').onclick = async () => {
+            await loadProjectData(backup);
+            projectInitialized = true;
+            dismissWelcomeScreen();
+        };
+        
+        document.getElementById('btn-dismiss-backup').onclick = async () => {
+            await deleteFromIDB('autosave');
+            if (welcomeRestoreBanner) welcomeRestoreBanner.classList.add('hidden');
+        };
+    }
+    
+    // New Project flow
+    document.getElementById('btn-new-project').onclick = () => {
+        const name = welcomeProjectName.value.trim();
+        if (!name) {
+            welcomeNameError.classList.remove('hidden');
+            return;
+        }
+        projectName = name;
+        document.getElementById('export-filename').value = name;
+        
+        projectInitialized = true;
+        dismissWelcomeScreen();
+        
+        // Trigger initial save
+        saveState();
+    };
+    
+    // Clear error on type
+    welcomeProjectName.addEventListener('input', () => welcomeNameError.classList.add('hidden'));
+    
+    // Load existing project from Welcome Screen
+    document.getElementById('btn-welcome-load').onclick = () => document.getElementById('file-welcome-load').click();
+    document.getElementById('file-welcome-load').onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const arrayBuffer = await file.arrayBuffer();
+            const text = new TextDecoder('utf-8').decode(arrayBuffer);
+            const data = JSON.parse(text);
+            
+            await loadProjectData(data);
+            if (!projectName && data.filename) projectName = data.filename;
+            
+            projectInitialized = true;
+            dismissWelcomeScreen();
+        } catch(err) {
+            console.error('Load project error:', err);
+            alert('Failed to load project: ' + err.message);
+        }
+        e.target.value = '';
+    };
+}
+
+initApp();
 
 // ─── Dynamic Title Animation ────────────────────────────────────────────────
 const dynamicTitle = document.getElementById('dynamic-title');
 if (dynamicTitle) {
+    // Update title periodically with project name if set
+    setInterval(() => {
+        if (projectName && dynamicTitle.getAttribute('data-base') !== projectName) {
+            dynamicTitle.setAttribute('data-base', projectName);
+            dynamicTitle.title = projectName;
+            
+            // Re-split into spans
+            dynamicTitle.innerHTML = '';
+            spans.length = 0; // Clear array
+            for (const char of projectName) {
+                const span = document.createElement('span');
+                span.textContent = char;
+                span.style.display = 'inline-block';
+                span.style.transition = 'all 0.2s ease';
+                dynamicTitle.appendChild(span);
+                spans.push({
+                    el: span,
+                    char: char
+                });
+            }
+        }
+    }, 1000);
+
     const text = dynamicTitle.textContent;
+
     dynamicTitle.innerHTML = '';
     const spans = [];
     

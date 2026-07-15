@@ -50,10 +50,15 @@
         <span class="hidden md:inline">Load Project</span>
       </button>
       <input type="file" id="file-load-project" accept=".ngefont" hidden />
-      <button class="mobile-icon-btn shrink-0 md:px-3 md:py-2 md:bg-transparent md:border md:border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 md:mr-4" id="btn-save-project">
+      <button class="mobile-icon-btn shrink-0 md:px-3 md:py-2 md:bg-transparent md:border md:border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2" id="btn-save-project">
         <span class="material-symbols-outlined text-[18px] md:text-[16px]">save</span>
         <span class="hidden md:inline">Save Project</span>
       </button>
+      <button class="mobile-icon-btn shrink-0 md:px-3 md:py-2 md:bg-transparent md:border md:border-white/20 text-white text-[10px] md:text-xs font-bold uppercase tracking-widest hover:bg-white/10 transition-colors flex items-center gap-2 md:mr-4 relative" id="btn-auto-save-toggle" title="Toggle Auto-Save">
+        <span class="material-symbols-outlined text-[18px] md:text-[16px]" id="auto-save-icon">cloud_done</span>
+        <span class="hidden md:inline" id="auto-save-label">Auto-Save ON</span>
+      </button>
+      <span id="auto-save-status" class="hidden md:block text-[9px] text-green-400/80 uppercase tracking-widest absolute" style="display:none;">Saved ✓</span>
       <div class="w-px h-6 bg-white/20 mr-1 md:mr-2 hidden md:block"></div>
       <input type="text" id="export-filename" value="Ngefont" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-3 py-2 outline-none w-32 focus:border-white/50" />
       <select id="export-format" class="hidden md:block bg-[#1a1a1a] border border-white/20 text-white text-xs px-2 py-2 outline-none focus:border-white/50">
@@ -66,7 +71,7 @@
         <span class="material-symbols-outlined text-[18px] md:hidden">Download</span>
         <span class="hidden md:inline">Export</span>
       </button>
-      <button class="mobile-icon-btn shrink-0 md:px-4 md:py-2 md:bg-blue-600 md:text-white text-white md:text-xs font-bold uppercase tracking-widest md:hover:bg-blue-500 transition-colors flex items-center gap-2" id="btn-upload-preview">
+      <button class="mobile-icon-btn shrink-0 md:px-4 md:py-2 md:bg-white md:text-black text-white md:text-xs font-bold uppercase tracking-widest md:hover:bg-gray-200 transition-colors flex items-center gap-2" id="btn-upload-preview">
         <span class="material-symbols-outlined text-[18px] md:hidden">cloud_upload</span>
         <span class="hidden md:inline">Upload to Preview</span>
       </button>
@@ -410,6 +415,60 @@
             <button id="btn-modal-cancel" class="px-4 py-2 text-white/70 hover:text-white text-xs font-bold uppercase tracking-widest">Batal</button>
             <button id="btn-modal-confirm" class="px-4 py-2 bg-white text-black rounded-md text-xs font-bold uppercase tracking-widest">Proses</button>
         </div>
+    </div>
+</div>
+
+<!-- Welcome Screen / Project Launcher -->
+<div id="welcome-screen" class="fixed inset-0 z-[100] flex items-center justify-center" style="background: radial-gradient(ellipse at center, rgba(15,15,15,0.97) 0%, rgba(0,0,0,0.99) 100%); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);">
+    <div class="welcome-container w-full max-w-md mx-4">
+        <!-- Logo & Title -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white/10 border border-white/10 mb-4">
+                <img src="nf-ico.png" alt="Ngefont" class="w-10 h-10" onerror="this.style.display='none'">
+            </div>
+            <h2 class="text-2xl font-bold text-white tracking-tight">Ngefont!</h2>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mt-1">Font Creation Studio</p>
+        </div>
+
+        <!-- Auto-backup Restore Banner (hidden by default) -->
+        <div id="welcome-restore-banner" class="hidden mb-6 p-4 border border-amber-500/30 bg-amber-500/5 rounded-xl">
+            <div class="flex items-start gap-3">
+                <span class="material-symbols-outlined text-amber-400 text-[20px] mt-0.5 shrink-0">restore</span>
+                <div class="flex-1">
+                    <p class="text-sm text-amber-200 font-medium">Auto-backup ditemukan</p>
+                    <p class="text-[11px] text-amber-400/70 mt-1" id="welcome-restore-info">Sesi terakhir tersimpan.</p>
+                    <div class="flex gap-2 mt-3">
+                        <button id="btn-restore-backup" class="px-4 py-1.5 bg-amber-500 text-black text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-amber-400 transition-colors">Restore</button>
+                        <button id="btn-dismiss-backup" class="px-4 py-1.5 bg-white/5 text-white/60 text-[10px] font-bold uppercase tracking-widest rounded-lg hover:bg-white/10 transition-colors">Abaikan</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- New Project -->
+        <div class="bg-white/[0.03] border border-white/10 rounded-xl p-5 mb-3">
+            <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Proyek Baru</h3>
+            <div class="flex flex-col gap-3">
+                <input type="text" id="welcome-project-name" placeholder="Nama proyek (wajib diisi)" class="w-full bg-[#0a0a0a] border border-white/15 text-white text-sm px-4 py-3 rounded-lg outline-none focus:border-white/40 transition-colors placeholder-gray-600" autocomplete="off" />
+                <p id="welcome-name-error" class="text-red-400 text-[10px] uppercase tracking-widest hidden">⚠ Nama proyek wajib diisi</p>
+                <button id="btn-new-project" class="w-full py-3 bg-white text-black text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-gray-200 transition-colors flex items-center justify-center gap-2">
+                    <span class="material-symbols-outlined text-[16px]">add</span>
+                    Mulai Proyek Baru
+                </button>
+            </div>
+        </div>
+
+        <!-- Load Existing Project -->
+        <div class="bg-white/[0.03] border border-white/10 rounded-xl p-5">
+            <h3 class="text-[10px] text-gray-500 uppercase tracking-widest mb-4">Lanjutkan Proyek</h3>
+            <button id="btn-welcome-load" class="w-full py-3 bg-transparent border border-white/20 text-white text-xs font-bold uppercase tracking-widest rounded-lg hover:bg-white/5 transition-colors flex items-center justify-center gap-2">
+                <span class="material-symbols-outlined text-[16px]">folder_open</span>
+                Load File .ngefont
+            </button>
+            <input type="file" id="file-welcome-load" accept=".ngefont" hidden />
+        </div>
+
+        <p class="text-center text-[10px] text-gray-700 uppercase tracking-widest mt-6">2026 — Stafatorrentnet — Muzeian</p>
     </div>
 </div>
 
