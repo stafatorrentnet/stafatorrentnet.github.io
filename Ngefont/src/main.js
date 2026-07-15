@@ -1663,7 +1663,7 @@ document.getElementById('btn-upload-preview')?.addEventListener('click', async (
     }
 
     // ========== UBAH DENGAN KREDENSIAL SUPABASE ANDA ==========
-    const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co/rest/v1/';
+    const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co';
     const SUPABASE_KEY = 'sb_publishable_K9-ejUbEbzWlw5o2EhdwcQ_3_8seFrP';
 
     if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {

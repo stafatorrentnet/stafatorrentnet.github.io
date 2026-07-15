@@ -1,5 +1,5 @@
 // ========== UBAH DENGAN KREDENSIAL SUPABASE ANDA ==========
-const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co/rest/v1/';
+const SUPABASE_URL = 'https://vmumjgmjiimhshirvfdt.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_K9-ejUbEbzWlw5o2EhdwcQ_3_8seFrP';
 
 const sentences = [
@@ -93,7 +93,7 @@ async function loadFonts() {
         let cssRules = '';
         
         fonts.forEach((font, i) => {
-            const fontName = `Font_${font.id.replace(/-/g, '_')}`;
+            const fontName = `Font_${String(font.id).replace(/-/g, '_')}`;
             cssRules += `
                 @font-face {
                     font-family: '${fontName}';
@@ -142,3 +142,49 @@ async function loadFonts() {
 
 // Load fonts on start
 loadFonts();
+
+// ─── Dynamic Title Animation ────────────────────────────────────────────────
+const dynamicTitle = document.getElementById('dynamic-title');
+if (dynamicTitle) {
+    const text = dynamicTitle.textContent;
+    dynamicTitle.innerHTML = '';
+    const spans = [];
+    
+    // Split into spans
+    for (const char of text) {
+        const span = document.createElement('span');
+        span.textContent = char;
+        span.style.display = 'inline-block';
+        span.style.transition = 'all 0.2s ease';
+        dynamicTitle.appendChild(span);
+        spans.push({
+            el: span,
+            char: char
+        });
+    }
+
+    const titleFonts = ['sans-serif', 'serif', 'monospace', 'cursive', 'system-ui'];
+    const titleWeights = ['300', '400', '600', '800', '900'];
+    const titleTransforms = ['uppercase', 'lowercase'];
+    const titleStyles = ['normal', 'italic'];
+
+    function animateTitle() {
+        spans.forEach(item => {
+            if (Math.random() < 0.3) {
+                const f = titleFonts[Math.floor(Math.random() * titleFonts.length)];
+                const w = titleWeights[Math.floor(Math.random() * titleWeights.length)];
+                const t = titleTransforms[Math.floor(Math.random() * titleTransforms.length)];
+                const s = titleStyles[Math.floor(Math.random() * titleStyles.length)];
+                
+                item.el.style.fontFamily = f;
+                item.el.style.fontWeight = w;
+                item.el.style.textTransform = t;
+                item.el.style.fontStyle = s;
+                
+                item.el.style.opacity = (0.7 + Math.random() * 0.3).toString();
+            }
+        });
+    }
+
+    setInterval(animateTitle, 300);
+}
