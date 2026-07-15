@@ -45,8 +45,18 @@ const previewText = document.getElementById('preview-text');
 const sizeSlider = document.getElementById('size-slider');
 const sizeLabel = document.getElementById('size-label');
 const btnRandomize = document.getElementById('btn-randomize');
+const btnPause = document.getElementById('btn-pause');
+const pauseIcon = document.getElementById('pause-icon');
+const pauseLabel = document.getElementById('pause-label');
 const fontListContainer = document.getElementById('font-list');
 const loadingIndicator = document.getElementById('loading-indicator');
+
+// ─── State ───────────────────────────────────────────────────────────────────
+let isCustomText = false;
+let isPaused = false;
+
+// Constant: desired scroll speed in pixels per second (consistent at all sizes)
+const SCROLL_SPEED_PX_PER_SEC = 60;
 
 // Initial text
 previewText.value = getRandomSentence();
@@ -61,13 +71,43 @@ if (isMobile) {
     sizeLabel.textContent = '48px';
 }
 
-let isCustomText = false;
+// ─── Dynamic Speed Calculation ───────────────────────────────────────────────
+// Measures actual track width and sets animation-duration so that
+// the speed in pixels-per-second stays constant regardless of font size.
+function recalcAllSpeeds() {
+    document.querySelectorAll('.font-preview-item .marquee-track').forEach(track => {
+        const trackWidth = track.scrollWidth;
+        if (trackWidth > 0) {
+            // One iteration moves -50% of total width
+            const distancePerIteration = trackWidth / 2;
+            const duration = distancePerIteration / SCROLL_SPEED_PX_PER_SEC;
+            track.style.animationDuration = `${duration}s`;
+        }
+    });
+}
 
 // ─── Size Slider ─────────────────────────────────────────────────────────────
 sizeSlider.addEventListener('input', (e) => {
     sizeLabel.textContent = `${e.target.value}px`;
     document.querySelectorAll('.font-preview-item .marquee-container').forEach(el => {
         el.style.fontSize = `${e.target.value}px`;
+    });
+    // Recalculate speed after font size change (track width changes)
+    requestAnimationFrame(() => recalcAllSpeeds());
+});
+
+// ─── Pause / Play Toggle ─────────────────────────────────────────────────────
+btnPause.addEventListener('click', () => {
+    isPaused = !isPaused;
+    pauseIcon.textContent = isPaused ? 'play_arrow' : 'pause';
+    if (pauseLabel) pauseLabel.textContent = isPaused ? 'Play' : 'Pause';
+    
+    document.querySelectorAll('.font-preview-item .marquee-track').forEach(track => {
+        if (isPaused) {
+            track.classList.add('paused');
+        } else {
+            track.classList.remove('paused');
+        }
     });
 });
 
@@ -76,31 +116,51 @@ btnRandomize.addEventListener('click', () => {
     isCustomText = false;
     previewText.value = getRandomSentence();
     rebuildAllMarquees();
+    // Reset loop counters
+    resetLoopCounters();
 });
 
 // ─── Custom Text Input ──────────────────────────────────────────────────────
+// Running text keeps running even when user types custom text
 previewText.addEventListener('input', () => {
-    isCustomText = true;
+    isCustomText = previewText.value.trim().length > 0;
     rebuildAllMarquees();
 });
 
-// ─── Random text rotation every 6 seconds ────────────────────────────────────
-setInterval(() => {
-    if (!isCustomText) {
-        previewText.value = getRandomSentence();
+// ─── 3-Loop Rotation for Random Text ─────────────────────────────────────────
+// Each marquee track counts its animation iterations.
+// After 3 full loops, if in random mode, swap to a new sentence.
+const loopCounters = new Map(); // track element -> iteration count
+
+function resetLoopCounters() {
+    loopCounters.clear();
+}
+
+function onMarqueeIteration(e) {
+    const track = e.target;
+    if (!track.classList.contains('marquee-track')) return;
+    
+    // Only rotate text in random (non-custom) mode
+    if (isCustomText) return;
+    
+    const count = (loopCounters.get(track) || 0) + 1;
+    loopCounters.set(track, count);
+    
+    if (count >= 3) {
+        // Swap to a new random sentence for ALL tracks
+        loopCounters.clear();
+        const newSentence = getRandomSentence();
+        previewText.value = newSentence;
         rebuildAllMarquees();
     }
-}, 6000);
+}
 
 // ─── Marquee Builder ─────────────────────────────────────────────────────────
-// Creates a seamless looping marquee by duplicating text until it fills > 2x viewport.
 function buildMarqueeHTML(text) {
-    // We duplicate the text enough times so that the track is at least 2x the viewport width.
-    // The animation shifts by -50%, creating a perfect seamless loop.
     const segment = `<span class="marquee-segment">${escapeHTML(text)}</span>`;
-    // Repeat enough times — 20 copies should be more than enough for any viewport & font size
+    // 20 copies ensures seamless coverage at any font size
     const repeated = segment.repeat(20);
-    return `<div class="marquee-track">${repeated}</div>`;
+    return `<div class="marquee-track${isPaused ? ' paused' : ''}">${repeated}</div>`;
 }
 
 function escapeHTML(str) {
@@ -112,20 +172,25 @@ function escapeHTML(str) {
 function rebuildAllMarquees() {
     const text = previewText.value || getRandomSentence();
     document.querySelectorAll('.font-preview-item .marquee-container').forEach(container => {
-        const track = container.querySelector('.marquee-track');
-        if (track) {
-            // Rebuild segments
-            const segment = `<span class="marquee-segment">${escapeHTML(text)}</span>`;
-            track.innerHTML = segment.repeat(20);
-            
-            // Pause/unpause
-            if (isCustomText && previewText.value.trim().length > 0) {
-                track.classList.add('paused');
-            } else {
-                track.classList.remove('paused');
-            }
+        // Remove old track (and its event listener)
+        const oldTrack = container.querySelector('.marquee-track');
+        if (oldTrack) {
+            oldTrack.removeEventListener('animationiteration', onMarqueeIteration);
+            oldTrack.remove();
+        }
+        
+        // Build new track
+        container.insertAdjacentHTML('beforeend', buildMarqueeHTML(text));
+        
+        // Attach iteration listener for 3-loop rotation
+        const newTrack = container.querySelector('.marquee-track');
+        if (newTrack) {
+            newTrack.addEventListener('animationiteration', onMarqueeIteration);
         }
     });
+    
+    // Recalculate speeds for the new content
+    requestAnimationFrame(() => recalcAllSpeeds());
 }
 
 // ─── Supabase Fetching ───────────────────────────────────────────────────────
@@ -167,6 +232,7 @@ async function loadFonts() {
         // Create @font-face rules
         const styleEl = document.createElement('style');
         let cssRules = '';
+        const currentSize = sizeSlider.value;
         
         fonts.forEach((font, i) => {
             const fontName = `Font_${String(font.id).replace(/-/g, '_')}`;
@@ -187,7 +253,7 @@ async function loadFonts() {
             const displayText = previewText.value || getRandomSentence();
             
             const item = document.createElement('div');
-            item.className = `font-preview-item`;
+            item.className = 'font-preview-item';
             if (isHighlighted) item.style.backgroundColor = 'rgba(59,130,246,0.05)';
             
             item.innerHTML = `
@@ -204,16 +270,27 @@ async function loadFonts() {
                         </a>
                     </div>
                 </div>
-                <div class="marquee-container" style="font-family: '${fontName}', sans-serif; font-size: ${sizeSlider.value}px; line-height: 1.15; color: #e0e0e0;">
+                <div class="marquee-container" style="font-family: '${fontName}', sans-serif; font-size: ${currentSize}px; line-height: 1.15; color: #e0e0e0;">
                     ${buildMarqueeHTML(displayText)}
                 </div>
             `;
             
             fontListContainer.appendChild(item);
+            
+            // Attach iteration listener
+            const track = item.querySelector('.marquee-track');
+            if (track) {
+                track.addEventListener('animationiteration', onMarqueeIteration);
+            }
         });
 
         styleEl.innerHTML = cssRules;
         document.head.appendChild(styleEl);
+        
+        // After fonts are rendered, recalculate speeds
+        // Use a longer timeout to allow @font-face to load and affect layout
+        setTimeout(() => recalcAllSpeeds(), 500);
+        setTimeout(() => recalcAllSpeeds(), 2000);
 
     } catch (e) {
         console.error("Error loading fonts:", e);
